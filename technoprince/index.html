@@ -149,6 +149,41 @@
   @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
   .empty-ring{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;border:1px solid rgba(229,193,88,.45);background:radial-gradient(circle,rgba(229,193,88,.16),rgba(229,193,88,0) 70%);animation:ringPulse 2.6s ease-in-out infinite}
   @keyframes ringPulse{0%,100%{box-shadow:0 0 0 6px rgba(229,193,88,.05),0 0 30px -6px rgba(229,193,88,.5)}50%{box-shadow:0 0 0 12px rgba(229,193,88,.02),0 0 44px -4px rgba(229,193,88,.7)}}
+  /* --- разбор сигнала / доказательство / дистанция до входа --- */
+  .media-row{display:flex;align-items:center;gap:10px;width:100%;margin-top:12px;padding:9px 10px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid var(--line2);text-align:left;transition:transform .4s var(--spring),border-color .3s}
+  .media-row:active{transform:scale(.98)}
+  .media-row .thumbs{display:flex;flex-shrink:0}
+  .media-row .thumbs img{width:38px;height:38px;object-fit:cover;border-radius:8px;border:1px solid rgba(229,193,88,.35);background:#0c0d11}
+  .media-row .thumbs img+img{margin-left:-12px}
+  .proof{margin-top:12px;padding:11px 12px;border-radius:14px;border:1px solid rgba(229,193,88,.45);background:linear-gradient(160deg,rgba(229,193,88,.09),rgba(229,193,88,.02));box-shadow:inset 0 0 0 1px rgba(0,0,0,.3)}
+  .tl{display:flex;align-items:flex-start;margin-top:10px}
+  .tl .st{flex:1;display:flex;flex-direction:column;align-items:center;text-align:center;gap:5px;position:relative}
+  .tl .st:not(:last-child)::after{content:"";position:absolute;top:8px;left:calc(50% + 11px);right:calc(-50% + 11px);height:1px;background:rgba(255,255,255,.12)}
+  .tl .st.done:not(:last-child)::after{background:linear-gradient(90deg,var(--gold),rgba(229,193,88,.25))}
+  .tl .dt{width:17px;height:17px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;border:1px solid rgba(255,255,255,.18);color:#6E7380;background:#0b0c10}
+  .tl .done .dt{background:linear-gradient(135deg,#F7DD8A,#E5C158 50%,#B8922E);color:#1a1405;border-color:transparent;box-shadow:0 0 12px -2px rgba(229,193,88,.7)}
+  .tl .now .dt{border-color:rgba(229,193,88,.6);color:var(--gold2)}
+  .tl .lb{font-size:10.5px;line-height:1.25;color:#6E7380;font-weight:600}
+  .tl .done .lb{color:#E9D9A6}
+  .dist{margin-top:10px;padding:9px 11px;border-radius:12px;background:rgba(0,0,0,.25);border:1px solid var(--line2)}
+  .dist .bar{height:3px;border-radius:3px;background:rgba(255,255,255,.07);margin-top:7px;overflow:hidden}
+  .dist .bar i{display:block;height:100%;border-radius:3px;background:linear-gradient(90deg,rgba(229,193,88,.35),var(--gold2));transition:width 1s cubic-bezier(.22,1,.36,1)}
+  .dist.hit{border-color:rgba(229,193,88,.5);background:rgba(229,193,88,.07)}
+  .lbx{position:fixed;inset:0;z-index:90;background:rgba(4,5,7,.99);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);display:flex;flex-direction:column;opacity:0;visibility:hidden;transition:opacity .35s,visibility 0s .35s}
+  .lbx.open{opacity:1;visibility:visible;transition:opacity .35s}
+  .lbx-top{display:flex;align-items:center;justify-content:space-between;padding:calc(var(--sat) + 12px) 14px 10px;border-bottom:1px solid var(--line)}
+  .lbx-x{width:46px;height:46px;border-radius:14px;border:1px solid rgba(229,193,88,.35);color:var(--gold2);font-size:22px;display:flex;align-items:center;justify-content:center;background:rgba(229,193,88,.06)}
+  .lbx-track{flex:1;display:flex;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .lbx-track::-webkit-scrollbar{display:none}
+  .lbx-slide{flex:0 0 100%;scroll-snap-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;min-width:0}
+  .lbx-slide img{max-width:100%;max-height:calc(100dvh - 230px);object-fit:contain;border-radius:12px;border:1px solid rgba(229,193,88,.22);background:#0b0c10;min-height:120px}
+  .lbx-cap{margin-top:12px;max-width:480px;text-align:center;font-size:13.5px;line-height:1.45;color:#D9DBE0;font-weight:600}
+  .lbx-bot{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px calc(var(--sab) + 14px)}
+  .lbx-nav{width:52px;height:52px;border-radius:16px;border:1px solid var(--line2);color:#C9CCD4;font-size:22px;background:rgba(255,255,255,.03)}
+  .lbx-nav:disabled{opacity:.25}
+  .lbx-dots{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+  .lbx-dots i{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.18);transition:all .4s var(--spring)}
+  .lbx-dots i.on{width:18px;border-radius:4px;background:var(--gold)}
 </style>
 </head>
 <body>
@@ -312,6 +347,11 @@
 </nav>
 
 <!-- МОДАЛКА: ТОРГОВЫЙ ШЛЮЗ BYBIT -->
+<div class="lbx" id="lbx" aria-hidden="true" role="dialog">
+  <div class="lbx-top"><div><div class="mono text-[10px] tracking-[.2em] text-[#8A8F9C]" id="lbxKind">РАЗБОР СИГНАЛА</div><div class="mono text-[13px] font-bold mt-0.5" style="color:var(--gold2)" id="lbxCount">1 / 1</div></div><button class="lbx-x" id="lbxClose" aria-label="Закрыть">✕</button></div>
+  <div class="lbx-track" id="lbxTrack"></div>
+  <div class="lbx-bot"><button class="lbx-nav" id="lbxPrev" aria-label="Назад">‹</button><div class="lbx-dots" id="lbxDots"></div><button class="lbx-nav" id="lbxNext" aria-label="Вперёд">›</button></div>
+</div>
 <div class="modal" id="routerModal" aria-hidden="true">
   <div class="bd" data-close></div>
   <div class="sheet">
@@ -485,6 +525,75 @@ function renderHeader() {
 }
 function syncHeaderHeight() { document.documentElement.style.setProperty('--hh', $('#hdr').offsetHeight + 'px'); }
 
+/* ---------------- Разбор сигнала, доказательство, дистанция до входа ---------------- */
+const symOf = s => String(s.pair).replace(/[^A-Z0-9]/gi, '').toUpperCase();
+const livePx = {}; let livePxStale = false;
+function mediaHTML(s) {
+  const m = s.media || []; if (!m.length) return '';
+  return `<button class="media-row" data-lbx="${esc(s.id)}" data-kind="media" data-i="0">
+    <span class="thumbs">${m.slice(0, 3).map(x => `<img src="${esc(x.src)}" alt="" loading="lazy" decoding="async">`).join('')}</span>
+    <span class="flex-1 min-w-0"><span class="block text-[13.5px] font-bold text-[#E4E5E8]">📊 Разбор сигнала (${m.length})</span><span class="block mono text-[10px] text-[#6E7380] mt-0.5 truncate">графики · ликвидации · потоки</span></span>
+    <span class="mono text-[16px]" style="color:var(--gold2)">→</span></button>`;
+}
+function proofHTML(s) {
+  const p = s.proof || []; if (!p.length) return '';
+  const closed = isClosed(s), filled = closed || /работ/i.test(s.status);
+  const st = [['Ордер выставлен', true], ['Лимитка исполнена', filled], ['Сделка закрыта', closed]];
+  const nowI = st.findIndex(x => !x[1]);
+  return `<div class="proof"><div class="flex items-center justify-between gap-2">
+      <button class="chip chip-gold" style="height:28px" data-lbx="${esc(s.id)}" data-kind="proof" data-i="0">Доказательство сделки ✓</button>
+      <span class="mono text-[10px] text-[#8A8F9C]">${esc(p[0].time || '')}</span></div>
+    <div class="tl">${st.map((x, i) => `<div class="st ${x[1] ? 'done' : i === nowI ? 'now' : ''}"><span class="dt">${x[1] ? '✓' : i + 1}</span><span class="lb">${x[0]}</span></div>`).join('')}</div>
+  </div>`;
+}
+function distInner(s) {
+  const px = livePx[symOf(s)], dp = n => { const f = n >= 100 ? 2 : 3; return Number(n).toLocaleString('en-US', { minimumFractionDigits: f, maximumFractionDigits: f }); };
+  if (!(px > 0)) return { hit: false, html: `<div class="flex justify-between items-center"><span class="label">Живая цена</span><span class="mono text-[11px] text-[#6E7380]">нет связи с биржей · ждём уровень ${fmtPrice(s.entry)}</span></div>` };
+  const short = s.side === 'SHORT', hit = short ? px >= s.entry : px <= s.entry;
+  const tp = s.tps[0], span = Math.abs(s.entry - tp) || 1;
+  const prog = Math.max(0, Math.min(100, (1 - Math.abs(s.entry - px) / span) * 100));
+  const d = Math.abs(s.entry - px) / px * 100;
+  const left = `<span class="mono text-[12px]"><span class="text-[#8A8F9C]">Цена</span> <b class="text-[#E4E5E8]">${dp(px)}</b>${livePxStale ? ' <span class="text-[#6E7380]">(кэш)</span>' : ''}</span>`;
+  const right = hit ? `<span class="mono text-[11px] font-bold" style="color:var(--gold2)">Цена коснулась зоны входа</span>` : `<span class="mono text-[11px] text-[#C9CCD4]">до лимитки <b style="color:var(--gold2)">${d.toFixed(1)}%</b></span>`;
+  return { hit, html: `<div class="flex justify-between items-center gap-2">${left}${right}</div><div class="bar"><i style="width:${hit ? 100 : prog}%"></i></div>` };
+}
+function distHTML(s) {
+  if (!/ожида/i.test(s.status)) return '';
+  const r = distInner(s); return `<div class="dist ${r.hit ? 'hit' : ''}" data-dist="${esc(s.id)}">${r.html}</div>`;
+}
+function updateDist() {
+  $$('[data-dist]').forEach(el => { const s = D.signals.find(x => x.id === el.dataset.dist); if (!s) return; const r = distInner(s); el.innerHTML = r.html; el.classList.toggle('hit', r.hit); });
+}
+/* лайтбокс */
+let lbxN = 0;
+function openLbx(items, i, kind) {
+  if (!items || !items.length) return;
+  lbxN = items.length;
+  $('#lbxKind').textContent = kind === 'proof' ? 'ДОКАЗАТЕЛЬСТВО СДЕЛКИ' : 'РАЗБОР СИГНАЛА';
+  $('#lbxTrack').innerHTML = items.map((x, k) => `<div class="lbx-slide"><img src="${esc(x.src)}" alt="${esc(x.caption || '')}" loading="${Math.abs(k - i) <= 1 ? 'eager' : 'lazy'}" decoding="async"><div class="lbx-cap">${esc(x.caption || '')}${x.time ? `<div class="mono text-[10.5px] text-[#8A8F9C] mt-1">${esc(x.time)}</div>` : ''}</div></div>`).join('');
+  $('#lbxDots').innerHTML = items.map(() => '<i></i>').join('');
+  const l = $('#lbx'); l.classList.add('open'); l.setAttribute('aria-hidden', 'false'); document.body.style.overflow = 'hidden';
+  requestAnimationFrame(() => { const t = $('#lbxTrack'); t.scrollLeft = i * t.clientWidth; lbxSync(i); });
+}
+function lbxIdx() { const t = $('#lbxTrack'); return Math.round(t.scrollLeft / Math.max(1, t.clientWidth)); }
+function lbxSync(i = lbxIdx()) {
+  $('#lbxCount').textContent = `${i + 1} / ${lbxN}`;
+  $$('#lbxDots i').forEach((d, k) => d.classList.toggle('on', k === i));
+  $('#lbxPrev').disabled = i <= 0; $('#lbxNext').disabled = i >= lbxN - 1;
+}
+function lbxGo(dir) { const t = $('#lbxTrack'); t.scrollTo({ left: (lbxIdx() + dir) * t.clientWidth, behavior: 'smooth' }); }
+function closeLbx() { const l = $('#lbx'); if (!l.classList.contains('open')) return false; l.classList.remove('open'); l.setAttribute('aria-hidden', 'true'); if (!$('.modal.open')) document.body.style.overflow = ''; return true; }
+$('#lbxTrack').addEventListener('scroll', () => lbxSync(), { passive: true });
+$('#lbxPrev').addEventListener('click', () => lbxGo(-1));
+$('#lbxNext').addEventListener('click', () => lbxGo(1));
+$('#lbxClose').addEventListener('click', closeLbx);
+document.addEventListener('keydown', e => { if (!$('#lbx').classList.contains('open')) return; if (e.key === 'Escape') closeLbx(); if (e.key === 'ArrowRight') lbxGo(1); if (e.key === 'ArrowLeft') lbxGo(-1); });
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-lbx]'); if (!b) return;
+  const s = D.signals.find(x => x.id === b.dataset.lbx); if (!s) return;
+  vibrate(); openLbx(b.dataset.kind === 'proof' ? s.proof : s.media, +b.dataset.i || 0, b.dataset.kind);
+});
+
 /* ---------------- Binance 24h тикер (с запасными узлами и кэшем) ---------------- */
 const SYMS = ['BTCUSDT', 'ETHUSDT', 'SOLUSDT'];
 const TICK_HOSTS = ['https://api.binance.com', 'https://data-api.binance.vision', 'https://api1.binance.com'];
@@ -495,6 +604,9 @@ async function fetchJSON(url, ms = 6000) {
   finally { clearTimeout(tm); }
 }
 function paintTicker(rows, stale) {
+  livePxStale = !!stale;
+  rows.forEach(r => { const lp = parseFloat(r.lastPrice); if (lp > 0) livePx[r.symbol] = lp; });
+  updateDist();
   rows.forEach(r => {
     const el = $(`.tick[data-s="${r.symbol}"]`); if (!el) return;
     const p = parseFloat(r.lastPrice), c = parseFloat(r.priceChangePercent);
@@ -509,7 +621,8 @@ function paintTicker(rows, stale) {
 }
 let tickHost = store.get('tp_tick_host'); // запоминаем рабочий узел (в РФ/США api.binance.com может быть закрыт)
 async function loadTicker() {
-  const q = '/api/v3/ticker/24hr?symbols=' + encodeURIComponent(JSON.stringify(SYMS));
+  const all = [...new Set([...SYMS, ...D.signals.map(symOf)])];
+  const q = '/api/v3/ticker/24hr?symbols=' + encodeURIComponent(JSON.stringify(all));
   const hosts = tickHost ? [tickHost, ...TICK_HOSTS.filter(h => h !== tickHost)] : TICK_HOSTS;
   for (const host of hosts) {
     try {
@@ -629,7 +742,10 @@ function cardHTML(s) {
             <button class="btn-gold" style="min-height:48px;font-size:14px;max-width:290px" data-unlock>Разблокировать уровни →</button></div></div>`
         : levelsHTML(s)}
     </div>
+    ${locked ? '' : distHTML(s)}
     ${s.note ? `<p class="text-[13px] leading-relaxed text-[#9aa0ac] mt-3 pl-3" style="border-left:2px solid rgba(229,193,88,.4)">${esc(s.note)}</p>` : ''}
+    ${mediaHTML(s)}
+    ${proofHTML(s)}
     ${calcHTML(s, locked)}
     <button class="btn-gold mt-3" data-route-open="${esc(s.id)}">Открыть сделку на бирже →</button>
   </article>`;
@@ -712,7 +828,7 @@ function renderCodeBox() {
 }
 $('#plans').addEventListener('click', e => { const b = e.target.closest('[data-plan]'); if (b) { vibrate(); openPay(D.plans.find(p => p.id === b.dataset.plan)); } });
 document.addEventListener('click', e => { if (e.target.id === 'codeBtn') activate(); });
-document.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.id === 'codeInp') activate(); if (e.key === 'Escape') closeModals(); });
+document.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.id === 'codeInp') activate(); if (e.key === 'Escape' && !$('#lbx').classList.contains('open')) closeModals(); });
 function activate() {
   const inp = $('#codeInp'), msg = $('#codeMsg'), v = inp.value.trim().toUpperCase();
   if (v && D.accessCodes.map(c => String(c).toUpperCase()).includes(v)) {
