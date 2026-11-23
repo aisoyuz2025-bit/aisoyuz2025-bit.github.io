@@ -147,6 +147,8 @@
   .unlock-flash{animation:uf 1.2s var(--ease)}
   @keyframes uf{0%{box-shadow:0 0 0 0 rgba(0,229,160,.7)}100%{box-shadow:0 0 0 24px rgba(0,229,160,0)}}
   @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+  .empty-ring{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;border:1px solid rgba(229,193,88,.45);background:radial-gradient(circle,rgba(229,193,88,.16),rgba(229,193,88,0) 70%);animation:ringPulse 2.6s ease-in-out infinite}
+  @keyframes ringPulse{0%,100%{box-shadow:0 0 0 6px rgba(229,193,88,.05),0 0 30px -6px rgba(229,193,88,.5)}50%{box-shadow:0 0 0 12px rgba(229,193,88,.02),0 0 44px -4px rgba(229,193,88,.7)}}
 </style>
 </head>
 <body>
@@ -385,17 +387,17 @@ const TERMINAL_DATA = {
   accessCodes: ["PRINCE2026"],
 
   // 🧠 МЫСЛИ ТЕХНОПРИНЦА (вкладка БАРОМЕТР)
-  princeThought: "Рынок вытряхнул лишних лонгистов на $598M. Высматриваем чистую лимитную точку входа от крупных кластеров ликвидности наверху. Работаем строго по расчёту, без эмоций.",
+  princeThought: "На отскоке техсектора США рынок выдал импульс вверх, но спот на крупных биржах (Binance, Coinbase, Upbit) разгружается в этот рост. По картам ликвидаций AVAX перевес снизу (64% ликвидности лонгов с магнитом на $6.88), сверху осталась полочка стопов на $7.15–$7.16. Выставили холодную лимитную ловушку и идём отдыхать — работает математика, не эмоции.",
 
   // 📰 AI-ФИЛЬТР НОВОСТЕЙ (3 карточки)
   // impact: "Бычий фактор 🟢" / "Медвежий фактор 🔴" / "Рыночный шум ⚪"
   news: [
-    { time: "09:40", title: "Ликвидации лонгов на $598M за сутки",          summary: "Каскад стопов снёс перегретое плечо. Фандинг остыл — рынок очищен для следующего импульса.", impact: "Медвежий фактор 🔴" },
-    { time: "12:15", title: "Приток в спотовые BTC-ETF третий день подряд", summary: "Институционалы забирают монету на откатах. Спрос на споте поддерживает нижние уровни.",       impact: "Бычий фактор 🟢" },
-    { time: "15:30", title: "Хайп вокруг очередного мем-токена",            summary: "Эмоциональный шум без влияния на структуру рынка. В расчёт не берём.",                       impact: "Рыночный шум ⚪" }
+    { time: "23 ноя · 23:15", title: "Отскок техсектора США (Nvidia +32%, Nasdaq +6.7%)", summary: "Краткосрочный всплеск аппетита к риску вызвал волну закрытия шортов по крипте, но институциональные BTC-ETF всю неделю фиксировали оттоки.", impact: "Рыночный шум ⚪" },
+    { time: "23 ноя · 23:15", title: "AVAX: Спотовый отток на фоне фьючерсного импульса", summary: "Binance (-$427K), Upbit (-$263K) и Coinbase (-$242K) продают на росте, Coinbase Premium в минусе (-0.14%).", impact: "Медвежий фактор 🔴" },
+    { time: "23 ноя · 23:15", title: "Карта ликвидаций AVAX: перевес 64% на стороне лонгов снизу", summary: "Под ценой скопились крупные пулы ликвидаций ($6.88 и $6.59), сверху — локальная полка стопов на $7.15–$7.16.", impact: "Медвежий фактор 🔴" }
   ],
 
-  // 📡 СИГНАЛЫ — ⚠️ ЦЕНЫ НИЖЕ ПРИМЕРНЫЕ (демо-данные), замени на свои реальные сетапы
+  // 📡 СИГНАЛЫ МАРАФОНА — только реальные сетапы
   //  side: "SHORT" / "LONG"        orderType: "LIMIT" / "MARKET"
   //  leverage: "5x", "3x", "7x", "10x" или "20x // ОТ ТЕЛА ДЕПОЗИТА"
   //  status: "Ожидает лимитку" / "В работе" / "Закрыт в плюс +18.4%"
@@ -404,26 +406,12 @@ const TERMINAL_DATA = {
   //  tpMode: "1TP" (tps: [цена]) или "3TP" (tps: [TP1, TP2, TP3])
   //  riskPercent — какой % депозита идёт в маржу сделки
   signals: [
-    { // ✅ закрытый в плюс — открыт всем как социальное доказательство (пример)
-      id: "TP-0417", pair: "ETH/USDT", side: "LONG", orderType: "LIMIT", leverage: "10x",
-      status: "Закрыт в плюс +18.4%", isLocked: false,
-      entry: 1690, stopLoss: 1650, tpMode: "3TP", tps: [1711, 1724, 1741],
-      riskPercent: 20,
-      note: "Лимитка от кластера ликвидности. Все три тейка исполнены, стоп переносили в безубыток после TP1."
-    },
-    { // 🔒 активный: лимитка, 1 тейк (пример)
-      id: "TP-0421", pair: "BTC/USDT", side: "SHORT", orderType: "LIMIT", leverage: "5x",
-      status: "Ожидает лимитку", isLocked: true,
-      entry: 66400, stopLoss: 67900, tpMode: "1TP", tps: [62800],
-      riskPercent: 20,
-      note: "Лимитка под верхний кластер ликвидности. Не догоняем — ждём, пока цена сама придёт в ордер."
-    },
-    { // 🔒 активный: по рынку, 3 тейка (пример)
-      id: "TP-0422", pair: "SOL/USDT", side: "LONG", orderType: "MARKET", leverage: "20x // ОТ ТЕЛА ДЕПОЗИТА",
-      status: "В работе", isLocked: true,
-      entry: 76.9, stopLoss: 75.4, tpMode: "3TP", tps: [78.3, 79.6, 81.5],
-      riskPercent: 10,
-      note: "Импульсный вход по рынку после выноса стопов. Короткий стоп, плечо строго от тела депозита."
+    { // 🟡 Первый боевой сигнал марафона $300 ➔ $3,000 — открыт всем
+      id: "M-001", pair: "AVAX/USDT", side: "SHORT", orderType: "LIMIT", leverage: "5x",
+      status: "Ожидает лимитку", isLocked: false,
+      entry: 7.155, stopLoss: 7.365, tpMode: "1TP", tps: [6.590],
+      riskPercent: 19, // $40 из $210 рабочего пула
+      note: "Лимитный вход от верхней полки ликвидаций ($7.15–$7.16) и 4H зоны предложения. Стоп вынесен за кластеры $7.27–$7.35. Один финальный тейк на $6.590 под ночную отработку. Если цена уйдёт ниже $6.88 без зацепа лимитки — ордер снимаем."
     }
   ],
 
@@ -446,12 +434,12 @@ const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const D = TERMINAL_DATA;
 const usd = (n, d = 0) => '$' + Number(n).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
-const fmtPrice = n => { n = Number(n); if (n >= 1000) return n.toLocaleString('en-US', { maximumFractionDigits: 1 }); if (n >= 1) return n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: n >= 100 ? 2 : 3 }); return n.toLocaleString('en-US', { maximumFractionDigits: 6 }); };
+const fmtPrice = n => { n = Number(n); if (n >= 1000) return n.toLocaleString('en-US', { maximumFractionDigits: 1 }); if (n >= 1) return n.toLocaleString('en-US', { minimumFractionDigits: n >= 100 ? 2 : 3, maximumFractionDigits: n >= 100 ? 2 : 3 }); return n.toLocaleString('en-US', { maximumFractionDigits: 6 }); };
 const lev = s => { const m = String(s).match(/(\d+(?:[.,]\d+)?)\s*[xх]/i); return m ? parseFloat(m[1].replace(',', '.')) : 1; };
 const isClosed = s => /^\s*закрыт/i.test(s.status);
 const tgLink = text => D.links.adminTg + (D.links.adminTg.includes('?') ? '&' : '?') + 'text=' + encodeURIComponent(text);
 const store = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} } };
-const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&', '<': '<', '>': '>', '"': '"', "'": '&#39;' }[c]));
 let isPro = store.get('tp_pro') === '1';
 let deposits = {}; try { deposits = JSON.parse(store.get('tp_dep') || '{}') || {}; } catch (e) {}
 
@@ -647,10 +635,22 @@ function cardHTML(s) {
   </article>`;
 }
 function plural(n, a, b, c) { const m10 = n % 10, m100 = n % 100; return m10 === 1 && m100 !== 11 ? a : m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14) ? b : c; }
+function emptyHTML(f) {
+  const t = f === 'wins'
+    ? ['Первая победа марафона формируется…', 'Сюда попадают только реально закрытые сделки. Каждая победа появится здесь после фиксации.']
+    : f === 'active' ? ['Сейчас нет активных сетапов', 'Терпение — тоже позиция. Новый сетап появится здесь, как только рынок даст точку входа.']
+    : ['Сетапы готовятся', 'Первый сигнал появится здесь, как только рынок даст точку входа.'];
+  return `<div class="glass corners p-7 text-center"><i class="c1"></i><i class="c2"></i>
+    <div class="empty-ring mx-auto"><span>${f === 'wins' ? '🏆' : '⏳'}</span></div>
+    <div class="mt-4 text-[16px] font-extrabold tracking-tight" style="color:#F2D47E">${t[0]}</div>
+    <p class="mt-2 text-[12.5px] leading-relaxed text-[#8A8F9C] max-w-[300px] mx-auto">${t[1]}</p>
+    <div class="mt-4 mono text-[10px] tracking-[.2em] text-[#5c616d]">МАРАФОН ${usd(D.marathon.start)} ➔ ${usd(D.marathon.target)}</div>
+  </div>`;
+}
 function renderSignals() {
   const list = D.signals.filter(s => filter === 'all' || (filter === 'active' ? !isClosed(s) : isClosed(s)));
   const el = $('#signalsList');
-  el.innerHTML = list.length ? list.map(cardHTML).join('') : `<div class="glass p-8 text-center text-[#6E7380] mono text-[12px]">В этом разделе пока пусто</div>`;
+  el.innerHTML = list.length ? list.map(cardHTML).join('') : emptyHTML(filter);
   el.classList.remove('stagger'); void el.offsetWidth; el.classList.add('stagger');
   const n = D.signals.length; $('#sigCount').textContent = `${n} ${plural(n, 'сетап', 'сетапа', 'сетапов')}`;
 }
