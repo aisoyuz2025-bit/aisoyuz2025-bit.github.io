@@ -450,6 +450,11 @@ const TERMINAL_DATA = {
       id: "M-001", pair: "AVAX/USDT", side: "SHORT", orderType: "LIMIT", leverage: "5x",
       status: "Ожидает лимитку", isLocked: false,
       entry: 7.155, stopLoss: 7.365, tpMode: "1TP", tps: [6.590],
+      // 🧾 журнал сделки: stage "placed" / "filled" / "closed"; src — скриншот (необязательно)
+      proof: [
+        { stage: "placed", time: "23 ноя · 23:12", caption: "Ордер выставлен на BingX: шорт лимит 7.155, 5x, ТП 6.590 / СЛ 7.365" },
+        { stage: "placed", time: "24 ноя · 00:51", src: "img/avax-001-bingx-1h.jpg", caption: "BingX 1H: лимитный шорт 7.155 стоит в стакане · СЛ 7.365 / ТП 6.590 · цена 6.886" }
+      ],
       riskPercent: 19, // $40 из $210 рабочего пула
       note: "Лимитный вход от верхней полки ликвидаций ($7.15–$7.16) и 4H зоны предложения. Стоп вынесен за кластеры $7.27–$7.35. Один финальный тейк на $6.590 под ночную отработку. Если цена уйдёт ниже $6.88 без зацепа лимитки — ордер снимаем."
     }
@@ -535,30 +540,49 @@ function mediaHTML(s) {
     <span class="flex-1 min-w-0"><span class="block text-[13.5px] font-bold text-[#E4E5E8]">📊 Разбор сигнала (${m.length})</span><span class="block mono text-[10px] text-[#6E7380] mt-0.5 truncate">графики · ликвидации · потоки</span></span>
     <span class="mono text-[16px]" style="color:var(--gold2)">→</span></button>`;
 }
+const isActive = s => !isClosed(s) && /работ|сделк|актив|исполн/i.test(s.status);
+const proofImgs = s => (s.proof || []).filter(x => x.src);
 function proofHTML(s) {
   const p = s.proof || []; if (!p.length) return '';
-  const closed = isClosed(s), filled = closed || /работ/i.test(s.status);
-  const st = [['Ордер выставлен', true], ['Лимитка исполнена', filled], ['Сделка закрыта', closed]];
+  const closed = isClosed(s), filled = closed || isActive(s), imgs = proofImgs(s);
+  const at = k => p.find(x => x.stage === k) || null;
+  const st = [['Ордер выставлен', true, at('placed')], ['Лимитка исполнена', filled, at('filled')], ['Сделка закрыта', closed, at('closed')]];
   const nowI = st.findIndex(x => !x[1]);
+  const last = [...p].reverse().find(x => x.time);
   return `<div class="proof"><div class="flex items-center justify-between gap-2">
-      <button class="chip chip-gold" style="height:28px" data-lbx="${esc(s.id)}" data-kind="proof" data-i="0">Доказательство сделки ✓</button>
-      <span class="mono text-[10px] text-[#8A8F9C]">${esc(p[0].time || '')}</span></div>
-    <div class="tl">${st.map((x, i) => `<div class="st ${x[1] ? 'done' : i === nowI ? 'now' : ''}"><span class="dt">${x[1] ? '✓' : i + 1}</span><span class="lb">${x[0]}</span></div>`).join('')}</div>
+      ${imgs.length ? `<button class="chip chip-gold" style="height:28px" data-lbx="${esc(s.id)}" data-kind="proof" data-i="${imgs.length - 1}">Доказательство сделки ✓${imgs.length > 1 ? ` · ${imgs.length}` : ''}</button>` : `<span class="chip chip-gold" style="height:28px">Журнал сделки</span>`}
+      <span class="mono text-[10px] text-[#8A8F9C]">${esc(last ? last.time : '')}</span></div>
+    <div class="tl">${st.map((x, i) => { const ev = x[2], im = p.find(y => y.stage === ['placed', 'filled', 'closed'][i] && y.src), k = im ? imgs.indexOf(im) : -1;
+      return `<div class="st ${x[1] ? 'done' : i === nowI ? 'now' : ''}" ${k >= 0 ? `data-lbx="${esc(s.id)}" data-kind="proof" data-i="${k}" style="cursor:pointer"` : ''}><span class="dt">${x[1] ? '✓' : i + 1}</span><span class="lb">${x[0]}${k >= 0 ? ' 📷' : ''}</span>${x[1] && ev && ev.time ? `<span class="mono text-[9.5px] text-[#8A8F9C]">${esc(ev.time)}</span>` : ''}</div>`; }).join('')}</div>
   </div>`;
 }
 function distInner(s) {
   const px = livePx[symOf(s)], dp = n => { const f = n >= 100 ? 2 : 3; return Number(n).toLocaleString('en-US', { minimumFractionDigits: f, maximumFractionDigits: f }); };
+  const stale = livePxStale ? ' <span class="text-[#6E7380]">(кэш)</span>' : '';
+  if (isActive(s)) {
+    if (!(px > 0)) return { hit: false, html: `<div class="flex justify-between items-center"><span class="label">Позиция открыта</span><span class="mono text-[11px] text-[#6E7380]">нет связи с биржей · вход ${fmtPrice(s.entry)}</span></div>` };
+    const dir = s.side === 'SHORT' ? -1 : 1, L = lev(s.leverage), tp = s.tps[s.tps.length - 1];
+    const mv = dir * (px - s.entry) / s.entry * 100, onM = mv * L, up = mv >= 0, sg = v => (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(2) + '%';
+    const toTp = Math.abs(tp - px) / px * 100, toSl = Math.abs(s.stopLoss - px) / px * 100;
+    const prog = Math.max(0, Math.min(100, (px - s.stopLoss) / (tp - s.stopLoss) * 100)); // от стопа (0%) к тейку (100%)
+    return { hit: false, html: `<div class="flex justify-between items-center gap-2"><span class="label" style="color:var(--gold2)">● Позиция открыта</span><span class="mono text-[12px]"><span class="text-[#8A8F9C]">Цена</span> <b class="text-[#E4E5E8]">${dp(px)}</b>${stale}</span></div>
+      <div class="flex justify-between items-end gap-2 mt-2"><div><div class="mono text-[10px] text-[#6E7380]">Нереализ. P&amp;L · от ${fmtPrice(s.entry)}</div><div class="mono text-[18px] font-extrabold ${up ? 'up' : 'down'}">${sg(mv)}</div></div>
+      <div class="text-right"><div class="mono text-[10px] text-[#6E7380]">на маржу · ${L}x</div><div class="mono text-[18px] font-extrabold ${up ? 'up' : 'down'}">${sg(onM)}</div></div></div>
+      <div class="bar" style="background:linear-gradient(90deg,rgba(255,59,92,.25),rgba(255,255,255,.06) 50%,rgba(0,229,160,.25))"><i style="width:${prog}%;background:linear-gradient(90deg,rgba(229,193,88,.3),var(--gold2))"></i></div>
+      <div class="flex justify-between mt-1.5 mono text-[10px]"><span style="color:#FF6A82">СЛ ${fmtPrice(s.stopLoss)} · ${toSl.toFixed(1)}%</span><span style="color:var(--em)">ТП ${fmtPrice(tp)} · ${toTp.toFixed(1)}%</span></div>` };
+  }
   if (!(px > 0)) return { hit: false, html: `<div class="flex justify-between items-center"><span class="label">Живая цена</span><span class="mono text-[11px] text-[#6E7380]">нет связи с биржей · ждём уровень ${fmtPrice(s.entry)}</span></div>` };
   const short = s.side === 'SHORT', hit = short ? px >= s.entry : px <= s.entry;
   const tp = s.tps[0], span = Math.abs(s.entry - tp) || 1;
   const prog = Math.max(0, Math.min(100, (1 - Math.abs(s.entry - px) / span) * 100));
   const d = Math.abs(s.entry - px) / px * 100;
-  const left = `<span class="mono text-[12px]"><span class="text-[#8A8F9C]">Цена</span> <b class="text-[#E4E5E8]">${dp(px)}</b>${livePxStale ? ' <span class="text-[#6E7380]">(кэш)</span>' : ''}</span>`;
+  const left = `<span class="mono text-[12px]"><span class="text-[#8A8F9C]">Цена</span> <b class="text-[#E4E5E8]">${dp(px)}</b>${stale}</span>`;
   const right = hit ? `<span class="mono text-[11px] font-bold" style="color:var(--gold2)">Цена коснулась зоны входа</span>` : `<span class="mono text-[11px] text-[#C9CCD4]">до лимитки <b style="color:var(--gold2)">${d.toFixed(1)}%</b></span>`;
   return { hit, html: `<div class="flex justify-between items-center gap-2">${left}${right}</div><div class="bar"><i style="width:${hit ? 100 : prog}%"></i></div>` };
 }
 function distHTML(s) {
-  if (!/ожида/i.test(s.status)) return '';
+  if (!/ожида/i.test(s.status) && !isActive(s)) return '';
+
   const r = distInner(s); return `<div class="dist ${r.hit ? 'hit' : ''}" data-dist="${esc(s.id)}">${r.html}</div>`;
 }
 function updateDist() {
@@ -591,7 +615,7 @@ document.addEventListener('keydown', e => { if (!$('#lbx').classList.contains('o
 document.addEventListener('click', e => {
   const b = e.target.closest('[data-lbx]'); if (!b) return;
   const s = D.signals.find(x => x.id === b.dataset.lbx); if (!s) return;
-  vibrate(); openLbx(b.dataset.kind === 'proof' ? s.proof : s.media, +b.dataset.i || 0, b.dataset.kind);
+  vibrate(); openLbx(b.dataset.kind === 'proof' ? proofImgs(s) : s.media, +b.dataset.i || 0, b.dataset.kind);
 });
 
 /* ---------------- Binance 24h тикер (с запасными узлами и кэшем) ---------------- */
@@ -716,7 +740,7 @@ function calcHTML(s, locked) {
   </div>`;
 }
 function cardHTML(s) {
-  const locked = s.isLocked && !isPro, closed = isClosed(s), work = /работ/i.test(s.status);
+  const locked = s.isLocked && !isPro, closed = isClosed(s), work = isActive(s);
   const stC = closed ? 'chip-long' : work ? 'chip-gold' : 'chip-n';
   const stDot = closed ? '✓' : `<span class="dot pulse" style="background:${work ? 'var(--gold)' : '#9aa0ac'}"></span>`;
   const levDisp = esc(s.leverage).replace(/\s*\/\/\s*/, ' <span style="opacity:.5">//</span> ');

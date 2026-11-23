@@ -1,0 +1,21 @@
+name: Decode TECHNOPRINCE images
+on:
+  push:
+    branches: [main]
+    paths: ['technoprince/img/*.b64']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  decode:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Decode and commit images
+        run: |
+          shopt -s nullglob
+          for f in technoprince/img/*.b64; do base64 -d "$f" > "${f%.b64}"; done
+          git config user.name "github-actions[bot]"
+          git config user.email "41898099+github-actions[bot]@users.noreply.github.com"
+          git add technoprince/img/
+          git diff --cached --quiet || (git commit -m "Decode TECHNOPRINCE images" && git push)
