@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#050608">
+<meta name="format-detection" content="telephone=no">
+<title>TECHNOPRINCE // TERMINAL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  if (window.tailwind) tailwind.config = { theme: { extend: {
+    colors: { obsidian:'#050608', gold:'#E5C158', emerald:'#00E5A0', ruby:'#FF3B5C' },
+    fontFamily: { sans:['"Plus Jakarta Sans"','system-ui','sans-serif'], mono:['"JetBrains Mono"','ui-monospace','monospace'] }
+  } } };
+</script>
+<style>
+  :root{
+    --bg:#050608; --gold:#E5C158; --gold2:#F7DD8A; --gold3:#B8922E; --em:#00E5A0; --ruby:#FF3B5C;
+    --line:rgba(229,193,88,.16); --line2:rgba(255,255,255,.07);
+    --txt:#ECEDEF; --mut:#8A8F9C;
+    --spring:cubic-bezier(.34,1.56,.64,1); --ease:cubic-bezier(.22,1,.36,1);
+    --sat:env(safe-area-inset-top,0px); --sab:env(safe-area-inset-bottom,0px);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:var(--bg);color:var(--txt);font-family:'Plus Jakarta Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased;overscroll-behavior-y:none}
+  body{min-height:100vh;min-height:100dvh;overflow-x:hidden}
+  .mono{font-family:'JetBrains Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums}
+  button,input{font:inherit;color:inherit}
+  button{cursor:pointer;border:0;background:none;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+  a{text-decoration:none;color:inherit}
+  #grid{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+  .vignette{position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(120% 80% at 50% 0%,rgba(229,193,88,.07),transparent 55%),radial-gradient(90% 60% at 50% 110%,rgba(0,229,160,.06),transparent 60%),radial-gradient(140% 100% at 50% 50%,transparent 55%,rgba(0,0,0,.75))}
+
+  /* стеклянные карточки + угловые виньетки */
+  .glass{position:relative;background:linear-gradient(160deg,rgba(28,31,40,.62),rgba(10,11,15,.55));backdrop-filter:blur(20px) saturate(140%);-webkit-backdrop-filter:blur(20px) saturate(140%);border:1px solid var(--line2);border-radius:18px}
+  .corners::before,.corners::after,.corners>.c1,.corners>.c2{content:"";position:absolute;width:14px;height:14px;pointer-events:none;border-color:var(--gold);opacity:.75}
+  .corners::before{top:-1px;left:-1px;border-top:1px solid;border-left:1px solid;border-top-left-radius:18px}
+  .corners::after{bottom:-1px;right:-1px;border-bottom:1px solid;border-right:1px solid;border-bottom-right-radius:18px}
+  .corners>.c1{top:-1px;right:-1px;border-top:1px solid;border-right:1px solid;border-top-right-radius:18px}
+  .corners>.c2{bottom:-1px;left:-1px;border-bottom:1px solid;border-left:1px solid;border-bottom-left-radius:18px}
+  .gold-frame{border:1px solid rgba(229,193,88,.45);box-shadow:0 0 0 1px rgba(229,193,88,.06) inset,0 10px 40px -10px rgba(229,193,88,.25)}
+  .gold-text{background:linear-gradient(100deg,#B8922E,#F7DD8A 40%,#E5C158 60%,#B8922E);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--mut)}
+
+  /* кнопки */
+  .btn-gold{position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:54px;padding:0 18px;border-radius:14px;font-weight:800;font-size:15px;letter-spacing:.01em;color:#1A1405;background:linear-gradient(135deg,#F7DD8A 0%,#E5C158 45%,#B8922E 100%);box-shadow:0 10px 30px -8px rgba(229,193,88,.55),inset 0 1px 0 rgba(255,255,255,.55);transition:transform .35s var(--spring),box-shadow .3s}
+  .btn-gold::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.55) 50%,transparent 70%);transform:translateX(-120%);animation:sheen 3.6s var(--ease) infinite}
+  @keyframes sheen{0%,60%{transform:translateX(-120%)}100%{transform:translateX(120%)}}
+  .btn-ghost{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:52px;padding:0 16px;border-radius:14px;font-weight:700;font-size:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);transition:transform .35s var(--spring),border-color .2s,background .2s}
+  .press:active,.btn-gold:active,.btn-ghost:active{transform:scale(.96)}
+  .chip{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 9px;border-radius:999px;font-family:'JetBrains Mono',monospace;font-size:10.5px;font-weight:700;letter-spacing:.06em;white-space:nowrap}
+  .chip-short{color:#FF6A82;background:rgba(255,59,92,.12);border:1px solid rgba(255,59,92,.45);box-shadow:0 0 14px -4px rgba(255,59,92,.6)}
+  .chip-long{color:var(--em);background:rgba(0,229,160,.1);border:1px solid rgba(0,229,160,.45);box-shadow:0 0 14px -4px rgba(0,229,160,.6)}
+  .chip-n{color:#C9CCD4;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12)}
+  .chip-gold{color:var(--gold2);background:rgba(229,193,88,.1);border:1px solid rgba(229,193,88,.4)}
+
+  /* шапка */
+  header{position:fixed;top:0;left:0;right:0;z-index:40;padding-top:var(--sat);background:linear-gradient(180deg,rgba(5,6,8,.92),rgba(5,6,8,.72));backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--line)}
+  .mono-tp{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:15px;color:#1A1405;background:linear-gradient(135deg,#F7DD8A,#E5C158 50%,#9C7A22);box-shadow:0 0 22px -4px rgba(229,193,88,.7),inset 0 1px 0 rgba(255,255,255,.6);flex:none}
+  .badge-status{font-family:'JetBrains Mono',monospace;font-size:9.5px;font-weight:700;letter-spacing:.08em;padding:5px 8px;border-radius:8px;white-space:nowrap;transition:all .5s var(--spring)}
+  .badge-guest{color:#A3A8B4;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.04)}
+  .badge-pro{color:#04130D;background:linear-gradient(135deg,#5BFFCB,#00E5A0);box-shadow:0 0 18px -2px rgba(0,229,160,.7)}
+  .dot{width:6px;height:6px;border-radius:50%;display:inline-block;flex:none}
+  .pulse{animation:pulse 1.8s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.7)}}
+  .bar{height:5px;border-radius:99px;background:rgba(255,255,255,.07);overflow:hidden}
+  .bar>i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#9C7A22,#E5C158,#F7DD8A);box-shadow:0 0 12px rgba(229,193,88,.8);transition:width 1.4s var(--ease)}
+  .ticker{display:flex;border-top:1px solid var(--line2);overflow:hidden}
+  .tick{flex:1;min-width:0;display:flex;align-items:baseline;justify-content:center;gap:5px;padding:7px 4px;font-family:'JetBrains Mono',monospace;font-size:11px;white-space:nowrap;transition:opacity .4s}
+  .tick+.tick{border-left:1px solid var(--line2)}
+  .up{color:var(--em)} .down{color:#FF6A82}
+  .flash-up{animation:fu .9s} .flash-down{animation:fd .9s}
+  @keyframes fu{0%{text-shadow:0 0 12px var(--em)}100%{text-shadow:none}} @keyframes fd{0%{text-shadow:0 0 12px var(--ruby)}100%{text-shadow:none}}
+
+  /* контент и вкладки */
+  main{position:relative;z-index:1;max-width:520px;margin:0 auto;padding:calc(var(--hh,150px) + 16px) 14px calc(var(--sab) + 104px)}
+  .tab{display:none}
+  .tab.active{display:block;animation:tabIn .6s var(--spring)}
+  @keyframes tabIn{0%{opacity:0;transform:translateY(18px) scale(.985)}100%{opacity:1;transform:none}}
+  .stagger>*{animation:rise .7s var(--spring) both}
+  .stagger>*:nth-child(2){animation-delay:.06s}.stagger>*:nth-child(3){animation-delay:.12s}.stagger>*:nth-child(4){animation-delay:.18s}.stagger>*:nth-child(5){animation-delay:.24s}
+  @keyframes rise{0%{opacity:0;transform:translateY(22px)}100%{opacity:1;transform:none}}
+  .h-sec{font-weight:800;font-size:22px;letter-spacing:-.02em;line-height:1.15}
+
+  /* фильтр */
+  .seg{position:relative;display:grid;grid-template-columns:repeat(3,1fr);padding:4px;border-radius:14px;background:rgba(255,255,255,.035);border:1px solid var(--line2)}
+  .seg button{position:relative;z-index:1;min-height:44px;font-size:12.5px;font-weight:700;color:var(--mut);transition:color .3s}
+  .seg button.on{color:#1A1405}
+  .seg .pill{position:absolute;z-index:0;top:4px;bottom:4px;left:4px;width:calc((100% - 8px)/3);border-radius:10px;background:linear-gradient(135deg,#F7DD8A,#E5C158 50%,#B8922E);box-shadow:0 6px 20px -6px rgba(229,193,88,.7);transition:transform .55s var(--spring)}
+
+  /* уровни сигнала */
+  .lv{display:flex;justify-content:space-between;align-items:center;padding:11px 12px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid var(--line2)}
+  .lv .v{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:15px}
+  .lock-wrap{position:relative;border-radius:14px;overflow:hidden}
+  .lock-wrap .blurred{filter:blur(7px);opacity:.55;pointer-events:none;user-select:none}
+  .lock-over{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:14px;background:linear-gradient(180deg,rgba(5,6,8,.25),rgba(5,6,8,.65));backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:1px solid rgba(229,193,88,.25);border-radius:14px}
+  .lock-ico{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;border:1px solid rgba(229,193,88,.5);background:rgba(229,193,88,.08);box-shadow:0 0 24px -4px rgba(229,193,88,.5);flex:none}
+  .tp-dist{height:4px;border-radius:9px;background:rgba(255,255,255,.07);overflow:hidden;margin-top:6px}
+  .tp-dist>i{display:block;height:100%;background:linear-gradient(90deg,#00B07B,#00E5A0)}
+  .inp{width:100%;min-height:52px;padding:0 14px;border-radius:12px;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.1);font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;outline:none;transition:border-color .2s,box-shadow .2s}
+  .inp:focus{border-color:rgba(229,193,88,.6);box-shadow:0 0 0 3px rgba(229,193,88,.12)}
+  .inp::placeholder{color:#555B68;font-weight:500}
+  .shake{animation:shake .5s cubic-bezier(.36,.07,.19,.97)}
+  @keyframes shake{10%,90%{transform:translateX(-2px)}20%,80%{transform:translateX(4px)}30%,50%,70%{transform:translateX(-7px)}40%,60%{transform:translateX(7px)}}
+  .err{border-color:rgba(255,59,92,.7)!important;box-shadow:0 0 0 3px rgba(255,59,92,.15)!important}
+  .win-stamp{position:absolute;top:13px;right:-36px;transform:rotate(38deg);padding:3px 40px;font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:.2em;color:#04130D;background:var(--em);box-shadow:0 0 20px rgba(0,229,160,.6)}
+
+  /* нижняя навигация */
+  nav.bottom{position:fixed;left:0;right:0;bottom:0;z-index:40;padding:8px 10px calc(8px + var(--sab));background:linear-gradient(0deg,rgba(5,6,8,.96),rgba(5,6,8,.78));backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--line)}
+  nav.bottom .wrap{position:relative;max-width:520px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr)}
+  nav.bottom button{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:58px;color:#6E7380;transition:color .3s}
+  nav.bottom button svg{width:23px;height:23px;transition:transform .5s var(--spring)}
+  nav.bottom button span{font-family:'JetBrains Mono',monospace;font-size:9.5px;font-weight:700;letter-spacing:.1em}
+  nav.bottom button.on{color:var(--gold2)}
+  nav.bottom button.on svg{transform:translateY(-2px) scale(1.12);filter:drop-shadow(0 0 8px rgba(229,193,88,.7))}
+  nav.bottom button:active svg{transform:scale(.85)}
+  nav.bottom .ind{position:absolute;top:-9px;left:0;width:25%;height:2px;display:flex;justify-content:center;transition:transform .6s var(--spring)}
+  nav.bottom .ind i{width:34px;height:2px;border-radius:2px;background:var(--gold);box-shadow:0 0 12px 1px var(--gold)}
+
+  /* модалки — шторка снизу */
+  .modal{position:fixed;inset:0;z-index:60;display:flex;align-items:flex-end;justify-content:center;visibility:hidden;transition:visibility 0s .6s}
+  .modal.open{visibility:visible;transition:none}
+  .modal .bd{position:absolute;inset:0;background:rgba(2,3,4,.72);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);opacity:0;transition:opacity .35s}
+  .modal.open .bd{opacity:1}
+  .sheet{position:relative;width:100%;max-width:520px;max-height:92vh;max-height:92dvh;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:10px 18px calc(22px + var(--sab));border-radius:24px 24px 0 0;background:linear-gradient(170deg,rgba(26,28,36,.94),rgba(8,9,12,.97));backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(229,193,88,.28);border-bottom:0;transform:translateY(105%);transition:transform .6s var(--spring)}
+  .modal.open .sheet{transform:none}
+  .grab{width:44px;height:4px;border-radius:9px;background:rgba(255,255,255,.18);margin:0 auto 14px}
+  .xbtn{position:absolute;top:12px;right:12px;width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08)}
+  .reveal{display:grid;grid-template-rows:0fr;opacity:0;transition:grid-template-rows .55s var(--spring),opacity .35s}
+  .reveal.show{grid-template-rows:1fr;opacity:1}
+  .reveal>div{overflow:hidden;padding:0 2px 14px}
+  .net-seg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+  .net-seg button{min-height:56px;border-radius:12px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;line-height:1.25;transition:all .35s var(--spring)}
+  .net-seg button.on{border-color:var(--em);color:var(--em);background:rgba(0,229,160,.08);box-shadow:0 0 20px -8px rgba(0,229,160,.8)}
+  .addr{word-break:break-all;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.5;padding:14px;border-radius:12px;background:rgba(0,0,0,.4);border:1px dashed rgba(229,193,88,.35);color:var(--gold2);user-select:all;-webkit-user-select:all}
+  .btn-gold.ok{background:linear-gradient(135deg,#5BFFCB,#00E5A0);color:#04130D;box-shadow:0 10px 30px -8px rgba(0,229,160,.6)}
+
+  /* тарифы */
+  .plan{width:100%;text-align:left;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 16px;transition:transform .4s var(--spring)}
+  .plan:active{transform:scale(.97)}
+  .plan.hot{border-color:rgba(229,193,88,.55);box-shadow:0 0 40px -14px rgba(229,193,88,.6)}
+  .toast{position:fixed;left:50%;bottom:calc(96px + var(--sab));z-index:80;transform:translate(-50%,30px);opacity:0;padding:12px 18px;border-radius:12px;font-weight:700;font-size:13px;background:rgba(10,12,15,.95);border:1px solid rgba(0,229,160,.5);color:var(--em);transition:all .5s var(--spring);pointer-events:none;white-space:nowrap}
+  .toast.show{transform:translate(-50%,0);opacity:1}
+  .unlock-flash{animation:uf 1.2s var(--ease)}
+  @keyframes uf{0%{box-shadow:0 0 0 0 rgba(0,229,160,.7)}100%{box-shadow:0 0 0 24px rgba(0,229,160,0)}}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<canvas id="grid"></canvas>
+<div class="vignette"></div>
+
+<!-- ============ ШАПКА ============ -->
+<header id="hdr">
+  <div class="max-w-[520px] mx-auto px-3.5 pt-3 pb-2.5">
+    <div class="flex items-center gap-3">
+      <div class="mono-tp">TP</div>
+      <div class="min-w-0 flex-1">
+        <div class="mono text-[12.5px] font-bold tracking-[.02em] truncate"><span class="gold-text">TECHNOPRINCE</span> <span class="text-[#5c616d]">//</span> TERMINAL</div>
+        <div class="flex items-center gap-1.5 mt-0.5 text-[10px] mono text-[#6E7380] tracking-wider"><span class="dot pulse" style="background:var(--em)"></span>SOVEREIGN LINK · ONLINE</div>
+      </div>
+      <div id="accessBadge" class="badge-status badge-guest">ГОСТЬ</div>
+    </div>
+    <div class="mt-2.5 flex items-center gap-2.5">
+      <div class="flex-1 min-w-0">
+        <div class="flex items-baseline justify-between mono text-[11px]">
+          <span class="truncate"><span class="text-[#8A8F9C]" id="mStart">$300</span> <span style="color:var(--gold)">➔</span> <b class="text-white" id="mCur">$300</b> <span class="text-[#6E7380]">/ Цель</span> <b class="gold-text" id="mTarget">$3,000</b></span>
+          <span class="text-[#6E7380] ml-2" id="mPct">0%</span>
+        </div>
+        <div class="bar mt-1.5"><i id="mBar" style="width:0%"></i></div>
+      </div>
+      <div class="chip chip-gold" style="height:30px">В СЕЙФЕ: <span id="mSafe">$0</span></div>
+    </div>
+  </div>
+  <div class="ticker max-w-[520px] mx-auto" id="ticker">
+    <div class="tick" data-s="BTCUSDT"><b class="text-[#9aa0ac]">BTC</b><span class="p text-white">—</span><span class="c text-[#6E7380]">—</span></div>
+    <div class="tick" data-s="ETHUSDT"><b class="text-[#9aa0ac]">ETH</b><span class="p text-white">—</span><span class="c text-[#6E7380]">—</span></div>
+    <div class="tick" data-s="SOLUSDT"><b class="text-[#9aa0ac]">SOL</b><span class="p text-white">—</span><span class="c text-[#6E7380]">—</span></div>
+  </div>
+</header>
+
+<main id="app">
+  <!-- ВКЛАДКА 1: СИГНАЛЫ -->
+  <section class="tab active" id="tab-signals">
+    <div class="flex items-end justify-between mb-3">
+      <div><div class="label">Квантовый поток</div><h1 class="h-sec mt-1">Сигналы</h1></div>
+      <div class="chip chip-n" id="sigCount"></div>
+    </div>
+    <div class="seg mb-4" id="filterSeg">
+      <div class="pill"></div>
+      <button class="on" data-f="all">Все сетапы</button>
+      <button data-f="active">Активные</button>
+      <button data-f="wins">История побед</button>
+    </div>
+    <div id="signalsList" class="space-y-4"></div>
+  </section>
+
+  <!-- ВКЛАДКА 2: БАРОМЕТР -->
+  <section class="tab" id="tab-barometer">
+    <div class="mb-3"><div class="label">Радар рынка</div><h1 class="h-sec mt-1">Барометр</h1></div>
+    <div class="space-y-4 stagger">
+      <div class="glass corners p-5"><i class="c1"></i><i class="c2"></i>
+        <div class="flex items-center justify-between gap-2"><div class="label">Барометр настроения толпы</div><div class="chip chip-n" id="fngSrc"><span class="dot pulse" style="background:var(--gold)"></span>…</div></div>
+        <div class="text-[12px] text-[#6E7380] mt-1">Индекс страха и жадности</div>
+        <div class="relative mx-auto mt-2" style="width:240px;height:220px">
+          <svg viewBox="0 0 240 240" width="240" height="240" id="gauge">
+            <defs>
+              <linearGradient id="gg" x1="0" y1="1" x2="1" y2="1"><stop offset="0" stop-color="#FF3B5C"/><stop offset=".5" stop-color="#E5C158"/><stop offset="1" stop-color="#00E5A0"/></linearGradient>
+              <filter id="glow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            </defs>
+            <circle cx="120" cy="120" r="114" fill="none" stroke="rgba(229,193,88,.12)" stroke-width="1"/>
+            <circle cx="120" cy="120" r="66" fill="none" stroke="rgba(255,255,255,.06)" stroke-width="1" stroke-dasharray="2 6"/>
+            <g id="ticks"></g>
+            <path id="arcBg" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="12" stroke-linecap="round"/>
+            <path id="arcVal" fill="none" stroke="url(#gg)" stroke-width="12" stroke-linecap="round" filter="url(#glow)" style="transition:stroke-dashoffset 1.6s cubic-bezier(.22,1,.36,1)"/>
+            <g id="needle" style="transform-origin:120px 120px;transition:transform 1.6s cubic-bezier(.34,1.4,.64,1)">
+              <line x1="120" y1="120" x2="120" y2="44" stroke="#F7DD8A" stroke-width="2" stroke-linecap="round"/>
+              <circle cx="120" cy="44" r="4" fill="#F7DD8A" filter="url(#glow)"/>
+            </g>
+            <circle cx="120" cy="120" r="7" fill="#050608" stroke="#E5C158" stroke-width="2"/>
+          </svg>
+          <div class="absolute inset-x-0 text-center" style="top:140px">
+            <div class="mono text-[42px] font-bold leading-none" id="fngVal">—</div>
+            <div class="mono text-[11px] tracking-[.14em] mt-1.5" id="fngTxt" style="color:var(--gold)">ЗАГРУЗКА…</div>
+          </div>
+        </div>
+        <div class="flex justify-between mono text-[10px] text-[#6E7380] px-2"><span>0 · СТРАХ</span><span>ЖАДНОСТЬ · 100</span></div>
+        <div class="mt-4 p-3.5 rounded-xl flex items-center gap-3" style="background:rgba(0,229,160,.06);border:1px solid rgba(0,229,160,.25)">
+          <span class="dot pulse" style="background:var(--em);width:8px;height:8px;box-shadow:0 0 10px var(--em)"></span>
+          <div class="min-w-0"><div class="label" style="color:#4fbf98">Режим торговли</div><div class="font-bold text-[15px] mt-0.5" id="tradeMode">—</div></div>
+        </div>
+        <div class="mono text-[10px] text-[#5c616d] mt-2.5 text-center" id="fngUpd"></div>
+      </div>
+
+      <div class="glass gold-frame corners p-5"><i class="c1"></i><i class="c2"></i>
+        <div class="flex items-center gap-3"><div class="mono-tp" style="width:34px;height:34px;font-size:12px;border-radius:10px">TP</div><div><div class="label" style="color:var(--gold)">Мысли Технопринца</div><div class="text-[11px] text-[#6E7380] mono mt-0.5">прямой канал · без фильтров</div></div></div>
+        <p class="mt-4 text-[15.5px] leading-relaxed text-[#E4E5E8]" id="princeThought"></p>
+      </div>
+
+      <div>
+        <div class="flex items-center justify-between mb-2.5 px-1"><div class="label">AI-фильтр новостей</div><div class="mono text-[10px] text-[#5c616d]">сигнал / шум</div></div>
+        <div class="space-y-3" id="newsList"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ВКЛАДКА 3: ОБУЧЕНИЕ -->
+  <section class="tab" id="tab-edu">
+    <div class="mb-3"><div class="label">Академия суверена</div><h1 class="h-sec mt-1">Обучение</h1></div>
+    <div class="space-y-4 stagger">
+      <div class="glass gold-frame corners p-5 overflow-hidden"><i class="c1"></i><i class="c2"></i>
+        <div class="absolute -top-16 -right-16 w-48 h-48 rounded-full pointer-events-none" style="background:radial-gradient(circle,rgba(229,193,88,.22),transparent 70%)"></div>
+        <div class="chip chip-gold"><span class="dot pulse" style="background:#FF3B5C"></span>LIVE · ПРЯМОЙ ЭФИР</div>
+        <h2 class="text-[23px] font-extrabold leading-tight mt-3 tracking-tight">Личное обучение трейдингу <span class="gold-text">с нуля</span> в прямом эфире с Технопринцем</h2>
+        <p class="text-[14px] text-[#9aa0ac] mt-2.5 leading-relaxed">Без воды и «волшебных кнопок». Ты повторяешь за мной на живом рынке — и выходишь с системой, а не с надеждой.</p>
+      </div>
+      <div class="glass corners p-1.5"><i class="c1"></i><i class="c2"></i><div id="eduList"></div></div>
+      <a class="btn-gold" id="eduBtn" target="_blank" rel="noopener noreferrer">Записаться на обучение в эфире →</a>
+      <a class="btn-ghost" id="channelBtn" target="_blank" rel="noopener noreferrer">Открытый канал Технопринца ↗</a>
+    </div>
+  </section>
+
+  <!-- ВКЛАДКА 4: ДОСТУП -->
+  <section class="tab" id="tab-access">
+    <div class="mb-3"><div class="label">Ключи от контура</div><h1 class="h-sec mt-1">Доступ</h1></div>
+    <div class="space-y-4 stagger">
+      <div>
+        <div class="label px-1 mb-2.5">Тарифы терминала</div>
+        <div class="space-y-3" id="plans"></div>
+      </div>
+
+      <div class="glass corners p-5" style="border-color:rgba(0,229,160,.3)"><i class="c1"></i><i class="c2"></i>
+        <div class="chip chip-long">FREE · $0</div>
+        <h3 class="text-[20px] font-extrabold mt-3 leading-tight">Получить 7 дней доступа <span style="color:var(--em)">БЕСПЛАТНО</span></h3>
+        <ol class="mt-3 space-y-2.5 text-[14px] text-[#C9CCD4]">
+          <li class="flex gap-3"><b class="mono" style="color:var(--em)">01</b><span>Зарегистрируйся на Bybit по нашей ссылке</span></li>
+          <li class="flex gap-3"><b class="mono" style="color:var(--em)">02</b><span>Пополни депозит</span></li>
+          <li class="flex gap-3"><b class="mono" style="color:var(--em)">03</b><span>Отправь свой UID в личку — активируем доступ на неделю бесплатно</span></li>
+        </ol>
+        <a class="btn-ghost press mt-4" style="min-height:62px;justify-content:space-between;padding:0 18px" id="freeBybit" target="_blank" rel="noopener noreferrer"><span class="flex flex-col items-start" style="gap:2px"><span class="text-[15px] font-extrabold">Регистрация на Bybit</span><span class="mono text-[11px] text-[#8A8F9C]">любой депозит от $10</span></span><span style="color:var(--gold)">↗</span></a>
+        <a class="btn-gold mt-3" id="freeUid" target="_blank" rel="noopener noreferrer">Отправить UID в личку →</a>
+      </div>
+
+      <div class="glass corners p-5"><i class="c1"></i><i class="c2"></i>
+        <div class="label">Ключ доступа</div>
+        <h3 class="text-[18px] font-extrabold mt-1.5">Активация PRO</h3>
+        <div id="codeBox" class="mt-3">
+          <input id="codeInp" class="inp uppercase" placeholder="Введи код доступа" autocomplete="off" autocapitalize="characters" spellcheck="false">
+          <button class="btn-gold mt-2.5" id="codeBtn">Активировать</button>
+          <div id="codeMsg" class="mono text-[12px] mt-2.5 min-h-[16px] text-center"></div>
+        </div>
+      </div>
+      <div class="text-center mono text-[10px] text-[#4a4f5a] leading-relaxed px-4">Торговля деривативами несёт высокий риск. Сигналы не являются инвестиционной рекомендацией. Управляй риском.</div>
+    </div>
+  </section>
+</main>
+
+<!-- НИЖНЯЯ НАВИГАЦИЯ -->
+<nav class="bottom">
+  <div class="wrap" id="navWrap">
+    <div class="ind" id="navInd"><i></i></div>
+    <button class="on" data-tab="signals" aria-label="Сигналы"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-6 4 4 8-10"/><path d="M15 5h5v5"/></svg><span>СИГНАЛЫ</span></button>
+    <button data-tab="barometer" aria-label="Барометр"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 16a8 8 0 1 1 16 0"/><path d="M12 16l4-5"/><circle cx="12" cy="16" r="1.3"/></svg><span>БАРОМЕТР</span></button>
+    <button data-tab="edu" aria-label="Обучение"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c3 2.5 9 2.5 12 0v-5"/></svg><span>ОБУЧЕНИЕ</span></button>
+    <button data-tab="access" aria-label="Доступ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M17 6l3 3M15 8l2 2"/></svg><span>ДОСТУП</span></button>
+  </div>
+</nav>
+
+<!-- МОДАЛКА: ТОРГОВЫЙ ШЛЮЗ BYBIT -->
+<div class="modal" id="routerModal" aria-hidden="true">
+  <div class="bd" data-close></div>
+  <div class="sheet">
+    <div class="grab"></div>
+    <button class="xbtn press" data-close aria-label="Закрыть">✕</button>
+    <div class="label" style="color:var(--gold)">Торговый шлюз // Bybit</div>
+    <div class="mono text-[12px] text-[#8A8F9C] mt-1 pr-12" id="routerPair"></div>
+    <div class="flex items-center gap-3.5 mt-4">
+      <div class="mono-tp" style="width:52px;height:52px;border-radius:15px;font-size:13px;letter-spacing:.04em">BYBIT</div>
+      <h3 class="text-[20px] font-extrabold leading-tight">Открываем сделку на <span class="gold-text">Bybit</span></h3>
+    </div>
+    <p class="mt-4 p-4 rounded-xl text-[14px] leading-relaxed text-[#E4E5E8]" style="background:rgba(229,193,88,.07);border:1px solid rgba(229,193,88,.3)">Bybit работает с любым депозитом — от <b class="gold-text">$10</b>. Глубокая ликвидность стакана и исполнение без проскальзывания: и для старта, и для крупного объёма.</p>
+    <div class="grid grid-cols-3 gap-2 mt-3">
+      <div class="lv" style="display:block;padding:10px;text-align:center"><div class="mono text-[15px] font-bold" style="color:var(--gold2)">от $10</div><div class="label mt-1" style="letter-spacing:.08em">депозит</div></div>
+      <div class="lv" style="display:block;padding:10px;text-align:center"><div class="mono text-[15px] font-bold" style="color:var(--em)">MAX</div><div class="label mt-1" style="letter-spacing:.08em">ликвидность</div></div>
+      <div class="lv" style="display:block;padding:10px;text-align:center"><div class="mono text-[15px] font-bold" style="color:var(--em)">0</div><div class="label mt-1" style="letter-spacing:.08em">проскальз.</div></div>
+    </div>
+    <a class="btn-gold mt-4" id="routeGo" target="_blank" rel="noopener noreferrer">Перейти на Bybit и открыть пару →</a>
+  </div>
+</div>
+
+<!-- МОДАЛКА: CRYPTO PAYMENT GATEWAY -->
+<div class="modal" id="payModal" aria-hidden="true">
+  <div class="bd" data-close></div>
+  <div class="sheet">
+    <div class="grab"></div>
+    <button class="xbtn press" data-close aria-label="Закрыть">✕</button>
+    <div class="label" style="color:var(--em)">Crypto Payment Gateway</div>
+    <div class="mt-3 pr-12"><div class="text-[12px] text-[#8A8F9C] font-semibold">Тариф</div><div class="text-[18px] font-extrabold" id="payPlan">—</div></div>
+    <div class="mt-3 p-4 rounded-xl flex items-baseline justify-between" style="background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.08)">
+      <span class="label">К оплате</span><span class="mono text-[30px] font-bold gold-text" id="payAmt">$0</span>
+    </div>
+    <div class="label mt-4 mb-2">Сеть</div>
+    <div class="net-seg" id="netSeg">
+      <button class="on press" data-net="bep20">USDT<br>BEP-20</button>
+      <button class="press" data-net="trc20">USDT<br>TRC-20</button>
+      <button class="press" data-net="erc20">USDC<br>ERC-20</button>
+    </div>
+    <div class="label mt-4 mb-2">Адрес кошелька · <span id="netName" style="color:var(--em)"></span></div>
+    <div class="addr" id="payAddr"></div>
+    <div class="mono text-[11px] text-[#8A8F9C] mt-2 leading-relaxed">⚠ Отправляй ровно <b class="text-white" id="payAmt2"></b> в сети <b class="text-white" id="netName2"></b>. Другая сеть = потеря средств.</div>
+    <button class="btn-gold mt-4" id="copyBtn">Скопировать адрес</button>
+    <a class="btn-ghost press mt-2.5" id="paidBtn" target="_blank" rel="noopener noreferrer">Я оплатил → Отправить чек в Telegram</a>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script>
+/* =====================================================================
+   ⚙️  TERMINAL_DATA — ЕДИНЫЙ БЛОК КОНФИГУРАЦИИ ТЕРМИНАЛА
+   Меняй только этот объект — весь интерфейс перестроится сам.
+   ===================================================================== */
+const TERMINAL_DATA = {
+
+  // 🏁 МАРАФОН: старт, текущий баланс, цель, сколько выведено в сейф (в $)
+  marathon: { start: 300, current: 300, target: 3000, safe: 0 },
+
+  // 🔗 ССЫЛКИ — ЗАМЕНИ НА СВОИ
+  links: {
+    adminTg:   "https://t.me/The_Crypto_Tech_Prince",                    // личка: заявки на обучение, чеки, UID
+    channelTg: "https://t.me/+OuZDsoYFso5mYzAy",                // Telegram-канал
+    bybit:     "https://partner.bybit.com/b/PULSECRYPTO" // реф. ссылка Bybit (любой депозит от $10)
+  },
+
+  // 💳 КОШЕЛЬКИ ДЛЯ ОПЛАТЫ ПОДПИСКИ — ЗАМЕНИ НА СВОИ
+  wallets: {
+    bep20: "0xcf738b46e3308f64c9b481ca968be03164e9b5bf", // USDT · сеть BNB Smart Chain (BEP-20)
+    trc20: "TXWWi322Z5Ghs6NXdBLwhbmbYw7z12coQ3",  // USDT · сеть Tron (TRC-20)
+    erc20: "0xcf738b46e3308f64c9b481ca968be03164e9b5bf"  // USDC · сеть Ethereum (ERC-20)
+  },
+
+  // 🔑 ПРОМО-КОДЫ: любой код из списка открывает PRO (регистр букв не важен)
+  accessCodes: ["PRINCE2026"],
+
+  // 🧠 МЫСЛИ ТЕХНОПРИНЦА (вкладка БАРОМЕТР)
+  princeThought: "Рынок вытряхнул лишних лонгистов на $598M. Высматриваем чистую лимитную точку входа от крупных кластеров ликвидности наверху. Работаем строго по расчёту, без эмоций.",
+
+  // 📰 AI-ФИЛЬТР НОВОСТЕЙ (3 карточки)
+  // impact: "Бычий фактор 🟢" / "Медвежий фактор 🔴" / "Рыночный шум ⚪"
+  news: [
+    { time: "09:40", title: "Ликвидации лонгов на $598M за сутки",          summary: "Каскад стопов снёс перегретое плечо. Фандинг остыл — рынок очищен для следующего импульса.", impact: "Медвежий фактор 🔴" },
+    { time: "12:15", title: "Приток в спотовые BTC-ETF третий день подряд", summary: "Институционалы забирают монету на откатах. Спрос на споте поддерживает нижние уровни.",       impact: "Бычий фактор 🟢" },
+    { time: "15:30", title: "Хайп вокруг очередного мем-токена",            summary: "Эмоциональный шум без влияния на структуру рынка. В расчёт не берём.",                       impact: "Рыночный шум ⚪" }
+  ],
+
+  // 📡 СИГНАЛЫ — ⚠️ ЦЕНЫ НИЖЕ ПРИМЕРНЫЕ (демо-данные), замени на свои реальные сетапы
+  //  side: "SHORT" / "LONG"        orderType: "LIMIT" / "MARKET"
+  //  leverage: "5x", "3x", "7x", "10x" или "20x // ОТ ТЕЛА ДЕПОЗИТА"
+  //  status: "Ожидает лимитку" / "В работе" / "Закрыт в плюс +18.4%"
+  //          (статус, начинающийся с «Закрыт», попадает в «Историю побед»)
+  //  isLocked: true — уровни скрыты для гостей, false — открыты всем
+  //  tpMode: "1TP" (tps: [цена]) или "3TP" (tps: [TP1, TP2, TP3])
+  //  riskPercent — какой % депозита идёт в маржу сделки
+  signals: [
+    { // ✅ закрытый в плюс — открыт всем как социальное доказательство (пример)
+      id: "TP-0417", pair: "ETH/USDT", side: "LONG", orderType: "LIMIT", leverage: "10x",
+      status: "Закрыт в плюс +18.4%", isLocked: false,
+      entry: 1690, stopLoss: 1650, tpMode: "3TP", tps: [1711, 1724, 1741],
+      riskPercent: 20,
+      note: "Лимитка от кластера ликвидности. Все три тейка исполнены, стоп переносили в безубыток после TP1."
+    },
+    { // 🔒 активный: лимитка, 1 тейк (пример)
+      id: "TP-0421", pair: "BTC/USDT", side: "SHORT", orderType: "LIMIT", leverage: "5x",
+      status: "Ожидает лимитку", isLocked: true,
+      entry: 66400, stopLoss: 67900, tpMode: "1TP", tps: [62800],
+      riskPercent: 20,
+      note: "Лимитка под верхний кластер ликвидности. Не догоняем — ждём, пока цена сама придёт в ордер."
+    },
+    { // 🔒 активный: по рынку, 3 тейка (пример)
+      id: "TP-0422", pair: "SOL/USDT", side: "LONG", orderType: "MARKET", leverage: "20x // ОТ ТЕЛА ДЕПОЗИТА",
+      status: "В работе", isLocked: true,
+      entry: 76.9, stopLoss: 75.4, tpMode: "3TP", tps: [78.3, 79.6, 81.5],
+      riskPercent: 10,
+      note: "Импульсный вход по рынку после выноса стопов. Короткий стоп, плечо строго от тела депозита."
+    }
+  ],
+
+  // ── Доп. настройки (можно не трогать) ──
+  // распределение фиксации для 3TP: % позиции на TP1 / TP2 / TP3 (сумма = 100)
+  tpDistribution: [50, 30, 20],
+  // тарифы подписки
+  plans: [
+    { id: "day",   title: "Тест-драйв",       period: "1 день",  price: 9,  hot: false },
+    { id: "week",  title: "Неделя в контуре", period: "7 дней",  price: 29, hot: true  }, // бейдж «Выбор большинства»
+    { id: "month", title: "Резидент",         period: "30 дней", price: 79, hot: false }
+  ],
+  // плашка «Режим торговли» под барометром
+  tradeMode: "Охота лимитками за ликвидностью"
+};
+/* ========================= КОНЕЦ КОНФИГУРАЦИИ ========================= */
+
+/* ---------------- утилиты ---------------- */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const D = TERMINAL_DATA;
+const usd = (n, d = 0) => '$' + Number(n).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
+const fmtPrice = n => { n = Number(n); if (n >= 1000) return n.toLocaleString('en-US', { maximumFractionDigits: 1 }); if (n >= 1) return n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: n >= 100 ? 2 : 3 }); return n.toLocaleString('en-US', { maximumFractionDigits: 6 }); };
+const lev = s => { const m = String(s).match(/(\d+(?:[.,]\d+)?)\s*[xх]/i); return m ? parseFloat(m[1].replace(',', '.')) : 1; };
+const isClosed = s => /^\s*закрыт/i.test(s.status);
+const tgLink = text => D.links.adminTg + (D.links.adminTg.includes('?') ? '&' : '?') + 'text=' + encodeURIComponent(text);
+const store = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} } };
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+let isPro = store.get('tp_pro') === '1';
+let deposits = {}; try { deposits = JSON.parse(store.get('tp_dep') || '{}') || {}; } catch (e) {}
+
+function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 2200); }
+function vibrate(p = 10) { try { navigator.vibrate && navigator.vibrate(p); } catch (e) {} }
+
+/* ---------------- пульсирующая векторная сетка (Canvas) ---------------- */
+(function grid() {
+  const c = $('#grid'), x = c.getContext('2d');
+  let w, h; const t0 = performance.now();
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function size() { const dpr = Math.min(devicePixelRatio || 1, 2); w = innerWidth; h = innerHeight; c.width = w * dpr; c.height = h * dpr; x.setTransform(dpr, 0, 0, dpr, 0, 0); }
+  size(); addEventListener('resize', size);
+  function frame(now) {
+    const t = Math.max(0, now - t0) / 1000; x.clearRect(0, 0, w, h);
+    const step = 34, br = 0.5 + 0.5 * Math.sin(t * 0.9), cx = w / 2, cy = h * 0.42;
+    const maxR = Math.hypot(w, h) * 0.6, R = (t * 70) % maxR;
+    x.lineWidth = 1;
+    for (let gx = cx % step; gx < w; gx += step) { const a = (0.04 + 0.035 * br) * (1 - Math.abs(gx - cx) / w); x.strokeStyle = `rgba(229,193,88,${a})`; x.beginPath(); x.moveTo(gx + .5, 0); x.lineTo(gx + .5, h); x.stroke(); }
+    for (let gy = cy % step; gy < h; gy += step) { const a = (0.035 + 0.03 * br) * (1 - Math.abs(gy - cy) / h); x.strokeStyle = `rgba(229,193,88,${a})`; x.beginPath(); x.moveTo(0, gy + .5); x.lineTo(w, gy + .5); x.stroke(); }
+    for (let gx = cx % step; gx < w; gx += step) for (let gy = cy % step; gy < h; gy += step) {
+      const k = Math.max(0, 1 - Math.abs(Math.hypot(gx - cx, gy - cy) - R) / 55);
+      if (k > .03) { x.fillStyle = `rgba(0,229,160,${0.08 + k * 0.6})`; x.fillRect(gx - 1, gy - 1, 2, 2); }
+      else { x.fillStyle = `rgba(229,193,88,${0.07 + 0.06 * br})`; x.fillRect(gx - .5, gy - .5, 1.5, 1.5); }
+    }
+    x.strokeStyle = `rgba(0,229,160,${0.09 * (1 - R / maxR)})`; x.beginPath(); x.arc(cx, cy, Math.max(0, R), 0, Math.PI * 2); x.stroke();
+    if (!reduce && !document.hidden) requestAnimationFrame(frame); else if (!reduce) setTimeout(() => requestAnimationFrame(frame), 500);
+  }
+  requestAnimationFrame(frame);
+})();
+
+/* ---------------- шапка: доступ + марафон ---------------- */
+function renderHeader() {
+  const b = $('#accessBadge');
+  b.textContent = isPro ? 'PRO АКТИВЕН' : 'ГОСТЬ';
+  b.className = 'badge-status ' + (isPro ? 'badge-pro' : 'badge-guest');
+  const m = D.marathon;
+  const pct = Math.max(0, Math.min(100, ((m.current - m.start) / (m.target - m.start)) * 100)) || 0;
+  $('#mStart').textContent = usd(m.start); $('#mCur').textContent = usd(m.current);
+  $('#mTarget').textContent = usd(m.target); $('#mSafe').textContent = usd(m.safe);
+  $('#mPct').textContent = (pct < 10 ? pct.toFixed(1) : pct.toFixed(0)) + '%';
+  setTimeout(() => $('#mBar').style.width = Math.max(pct, 1.5) + '%', 150);
+}
+function syncHeaderHeight() { document.documentElement.style.setProperty('--hh', $('#hdr').offsetHeight + 'px'); }
+
+/* ---------------- Binance 24h тикер (с запасными узлами и кэшем) ---------------- */
+const SYMS = ['BTCUSDT', 'ETHUSDT', 'SOLUSDT'];
+const TICK_HOSTS = ['https://api.binance.com', 'https://data-api.binance.vision', 'https://api1.binance.com'];
+const lastPx = {};
+async function fetchJSON(url, ms = 6000) {
+  const ctl = new AbortController(); const tm = setTimeout(() => ctl.abort(), ms);
+  try { const r = await fetch(url, { signal: ctl.signal, cache: 'no-store' }); if (!r.ok) throw new Error('HTTP ' + r.status); return await r.json(); }
+  finally { clearTimeout(tm); }
+}
+function paintTicker(rows, stale) {
+  rows.forEach(r => {
+    const el = $(`.tick[data-s="${r.symbol}"]`); if (!el) return;
+    const p = parseFloat(r.lastPrice), c = parseFloat(r.priceChangePercent);
+    const pe = $('.p', el), ce = $('.c', el), prev = lastPx[r.symbol];
+    pe.textContent = p >= 1000 ? p.toLocaleString('en-US', { maximumFractionDigits: 0 }) : p.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    if (prev && prev !== p) { pe.classList.remove('flash-up', 'flash-down'); void pe.offsetWidth; pe.classList.add(p > prev ? 'flash-up' : 'flash-down'); }
+    lastPx[r.symbol] = p;
+    ce.textContent = (c >= 0 ? '+' : '') + c.toFixed(2) + '%';
+    ce.className = 'c ' + (c >= 0 ? 'up' : 'down');
+    el.style.opacity = stale ? .55 : 1;
+  });
+}
+let tickHost = store.get('tp_tick_host'); // запоминаем рабочий узел (в РФ/США api.binance.com может быть закрыт)
+async function loadTicker() {
+  const q = '/api/v3/ticker/24hr?symbols=' + encodeURIComponent(JSON.stringify(SYMS));
+  const hosts = tickHost ? [tickHost, ...TICK_HOSTS.filter(h => h !== tickHost)] : TICK_HOSTS;
+  for (const host of hosts) {
+    try {
+      const data = await fetchJSON(host + q);
+      if (Array.isArray(data) && data.length && data[0].lastPrice) { tickHost = host; store.set('tp_tick_host', host); paintTicker(data, false); store.set('tp_tick', JSON.stringify(data)); return; }
+    } catch (e) { /* узел недоступен — пробуем следующий */ }
+  }
+  const cached = store.get('tp_tick');
+  if (cached) { try { paintTicker(JSON.parse(cached), true); } catch (e) {} }
+}
+
+/* ---------------- Индекс страха и жадности ---------------- */
+const FNG_RU = { 'Extreme Fear': 'ЭКСТРЕМАЛЬНЫЙ СТРАХ', 'Fear': 'СТРАХ', 'Neutral': 'НЕЙТРАЛЬНО', 'Greed': 'ЖАДНОСТЬ', 'Extreme Greed': 'ЭКСТРЕМАЛЬНАЯ ЖАДНОСТЬ' };
+const G = { cx: 120, cy: 120, r: 90, a0: -130, a1: 130 };
+const polar = (a, r = G.r) => { const rad = (a - 90) * Math.PI / 180; return [G.cx + r * Math.cos(rad), G.cy + r * Math.sin(rad)]; };
+function arcPath(a, b, r = G.r) { const [x1, y1] = polar(a, r), [x2, y2] = polar(b, r); return `M${x1.toFixed(2)} ${y1.toFixed(2)} A${r} ${r} 0 ${b - a > 180 ? 1 : 0} 1 ${x2.toFixed(2)} ${y2.toFixed(2)}`; }
+function initGauge() {
+  const p = arcPath(G.a0, G.a1); $('#arcBg').setAttribute('d', p); const v = $('#arcVal'); v.setAttribute('d', p);
+  const L = G.r * (G.a1 - G.a0) * Math.PI / 180; v.style.strokeDasharray = L; v.style.strokeDashoffset = L; v._L = L;
+  let s = ''; for (let i = 0; i <= 50; i++) { const a = G.a0 + (G.a1 - G.a0) * i / 50, big = i % 5 === 0; const [x1, y1] = polar(a, 108), [x2, y2] = polar(a, big ? 100 : 104); s += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="${big ? 'rgba(229,193,88,.6)' : 'rgba(255,255,255,.16)'}" stroke-width="1"/>`; }
+  $('#ticks').innerHTML = s; $('#needle').style.transform = `rotate(${G.a0}deg)`;
+}
+function setGauge(val, cls, live, ts) {
+  const v = $('#arcVal'); v.style.strokeDashoffset = v._L * (1 - val / 100);
+  $('#needle').style.transform = `rotate(${G.a0 + (G.a1 - G.a0) * val / 100}deg)`;
+  const col = val < 25 ? '#FF6A82' : val < 45 ? '#FFA45C' : val < 56 ? '#E5C158' : val < 75 ? '#7CF0B0' : '#00E5A0';
+  const el = $('#fngVal'), st = performance.now();
+  (function cnt(now) { const k = Math.min(1, (now - st) / 1400); el.textContent = Math.round(val * (1 - Math.pow(1 - k, 3))); if (k < 1) requestAnimationFrame(cnt); })(st);
+  el.style.color = col; $('#fngTxt').textContent = FNG_RU[cls] || String(cls).toUpperCase(); $('#fngTxt').style.color = col;
+  $('#fngSrc').innerHTML = live ? '<span class="dot pulse" style="background:var(--em)"></span>LIVE' : '<span class="dot" style="background:#6E7380"></span>КЭШ';
+  if (ts) $('#fngUpd').textContent = 'alternative.me · данные на ' + new Date(ts * 1000).toLocaleDateString('ru-RU');
+}
+let fngLoaded = false;
+async function loadFng() {
+  if (fngLoaded) return; fngLoaded = true;
+  try {
+    const d = await fetchJSON('https://api.alternative.me/fng/?limit=1');
+    const it = d.data[0]; store.set('tp_fng', JSON.stringify(it));
+    setGauge(+it.value, it.value_classification, true, +it.timestamp);
+  } catch (e) {
+    fngLoaded = false;
+    const c = store.get('tp_fng');
+    if (c) { try { const it = JSON.parse(c); setGauge(+it.value, it.value_classification, false, +it.timestamp); } catch (_) {} }
+    else { $('#fngVal').textContent = '—'; $('#fngTxt').textContent = 'НЕТ СВЯЗИ С API'; $('#fngSrc').innerHTML = '<span class="dot" style="background:#6E7380"></span>OFFLINE'; }
+  }
+}
+
+/* ---------------- Сигналы ---------------- */
+let filter = 'all';
+const lockSvg = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#E5C158" stroke-width="1.8" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/><circle cx="12" cy="15.5" r="1.2" fill="#E5C158"/></svg>';
+function tpWeights(s) { if (s.tps.length === 1) return [100]; const d = D.tpDistribution || []; return d.length === s.tps.length ? d : s.tps.map(() => 100 / s.tps.length); }
+function calc(s, dep) {
+  const margin = dep * s.riskPercent / 100, L = lev(s.leverage), pos = margin * L, w = tpWeights(s), dir = s.side === 'SHORT' ? -1 : 1;
+  const move = s.tps.reduce((a, tp, i) => a + (w[i] / 100) * dir * (tp - s.entry) / s.entry, 0);
+  return { margin, pos, profit: pos * move, L };
+}
+function pctTo(s, p) { const v = (p - s.entry) / s.entry * 100 * (s.side === 'SHORT' ? -1 : 1); return (v >= 0 ? '+' : '') + v.toFixed(2) + '%'; }
+
+function levelsHTML(s) {
+  const w = tpWeights(s), one = s.tpMode === '1TP' || s.tps.length === 1;
+  const tps = one
+    ? `<div class="lv" style="border-color:rgba(0,229,160,.25)"><div><div class="label" style="color:#4fbf98">Тейк-профит</div><div class="text-[11px] text-[#6E7380] mono mt-0.5">100% позиции</div></div><div class="text-right"><div class="v" style="color:var(--em)">${fmtPrice(s.tps[0])}</div><div class="mono text-[11px] up">${pctTo(s, s.tps[0])}</div></div></div>`
+    : `<div class="grid grid-cols-3 gap-2">${s.tps.map((tp, i) => `<div class="lv" style="display:block;padding:10px;border-color:rgba(0,229,160,.22)"><div class="flex justify-between items-center"><span class="label" style="color:#4fbf98;letter-spacing:.1em">TP${i + 1}</span><span class="mono text-[10px] text-[#8A8F9C]">${Math.round(w[i])}%</span></div><div class="v mt-1" style="color:var(--em);font-size:13.5px">${fmtPrice(tp)}</div><div class="mono text-[10px] up">${pctTo(s, tp)}</div><div class="tp-dist"><i style="width:${w[i]}%"></i></div></div>`).join('')}</div>`;
+  return `<div class="space-y-2">
+    <div class="grid grid-cols-2 gap-2">
+      <div class="lv" style="display:block"><div class="label">Точка входа</div><div class="v mt-1">${fmtPrice(s.entry)}</div><div class="mono text-[10px] text-[#6E7380]">${esc(s.orderType)}</div></div>
+      <div class="lv" style="display:block;border-color:rgba(255,59,92,.25)"><div class="label" style="color:#c46072">Стоп-лосс</div><div class="v mt-1" style="color:#FF6A82">${fmtPrice(s.stopLoss)}</div><div class="mono text-[10px] down">${pctTo(s, s.stopLoss)}</div></div>
+    </div>
+    <div class="flex items-center justify-between px-1 pt-1"><span class="label">Фиксация</span><span class="mono text-[10px] text-[#8A8F9C]">${one ? '1 Тейк-профит' : '3 Тейк-профита · TP1 / TP2 / TP3'}</span></div>
+    ${tps}
+  </div>`;
+}
+// фейковые уровни под блюром — настоящие цены в DOM не попадают
+function fakeLevelsHTML(s) { return levelsHTML({ ...s, entry: 88888, stopLoss: 88888, tps: s.tps.map(() => 88888) }); }
+
+function calcOut(s, dep, locked) {
+  const d = parseFloat(String(dep).replace(',', '.')), ok = d > 0, r = ok ? calc(s, d) : null;
+  const m = !ok ? '—' : usd(r.margin, 2);
+  const p = !ok ? '—' : locked ? '+$•••' : (r.profit >= 0 ? '+' : '−') + usd(Math.abs(r.profit), 2);
+  return `<div class="lv" style="display:block;padding:10px"><div class="label">Маржа в сделку</div><div class="v mt-1" style="font-size:15px">${m}</div><div class="mono text-[10px] text-[#6E7380]">${s.riskPercent}% депо · ${lev(s.leverage)}x</div></div>
+    <div class="lv" style="display:block;padding:10px;border-color:rgba(0,229,160,.22)"><div class="label" style="color:#4fbf98">Расчётный профит</div><div class="v mt-1" style="color:var(--em);font-size:15px;${locked && ok ? 'filter:blur(5px)' : ''}">${p}</div><div class="mono text-[10px] text-[#6E7380]">${locked ? 'откроется в PRO' : (s.tpMode === '3TP' ? 'по всем TP' : 'по тейку')}</div></div>`;
+}
+function calcHTML(s, locked) {
+  const dep = deposits[s.id] ?? '';
+  return `<div class="mt-3 p-3.5 rounded-xl" style="background:rgba(0,0,0,.28);border:1px solid var(--line2)">
+    <label class="flex items-center justify-between gap-3">
+      <span class="text-[13px] font-bold text-[#C9CCD4] whitespace-nowrap">Мой депозит ($):</span>
+      <input class="inp" style="min-height:46px;text-align:right;max-width:150px" type="text" inputmode="decimal" placeholder="1000" value="${esc(dep)}" data-dep="${esc(s.id)}">
+    </label>
+    <div class="grid grid-cols-2 gap-2 mt-2.5" data-calcout="${esc(s.id)}">${calcOut(s, dep, locked)}</div>
+  </div>`;
+}
+function cardHTML(s) {
+  const locked = s.isLocked && !isPro, closed = isClosed(s), work = /работ/i.test(s.status);
+  const stC = closed ? 'chip-long' : work ? 'chip-gold' : 'chip-n';
+  const stDot = closed ? '✓' : `<span class="dot pulse" style="background:${work ? 'var(--gold)' : '#9aa0ac'}"></span>`;
+  const levDisp = esc(s.leverage).replace(/\s*\/\/\s*/, ' <span style="opacity:.5">//</span> ');
+  return `<article class="glass corners p-4 overflow-hidden" data-id="${esc(s.id)}"><i class="c1"></i><i class="c2"></i>
+    ${closed ? '<div class="win-stamp">PROFIT</div>' : ''}
+    <div class="flex items-start justify-between gap-2">
+      <div class="min-w-0">
+        <div class="mono text-[10px] text-[#5c616d] tracking-widest">#${esc(s.id)}</div>
+        <div class="text-[22px] font-extrabold tracking-tight leading-tight mt-0.5">${esc(s.pair)}</div>
+      </div>
+      <span class="chip ${stC} mt-1" style="${closed ? 'margin-right:30px' : ''}">${stDot} ${esc(s.status)}</span>
+    </div>
+    <div class="flex flex-wrap gap-1.5 mt-2.5">
+      <span class="chip ${s.side === 'SHORT' ? 'chip-short' : 'chip-long'}">${s.side === 'SHORT' ? '▼' : '▲'} ${esc(s.side)}</span>
+      <span class="chip chip-n">${esc(s.orderType)}</span>
+      <span class="chip chip-gold">${levDisp}</span>
+      <span class="chip chip-n">${esc(s.tpMode)}</span>
+    </div>
+    <div class="mt-3.5">
+      ${locked
+        ? `<div class="lock-wrap"><div class="blurred" aria-hidden="true">${fakeLevelsHTML(s)}</div>
+            <div class="lock-over"><div class="lock-ico">${lockSvg}</div><div class="text-center text-[12.5px] text-[#C9CCD4] font-semibold">Вход, стоп и тейки — в PRO-контуре</div>
+            <button class="btn-gold" style="min-height:48px;font-size:14px;max-width:290px" data-unlock>Разблокировать уровни →</button></div></div>`
+        : levelsHTML(s)}
+    </div>
+    ${s.note ? `<p class="text-[13px] leading-relaxed text-[#9aa0ac] mt-3 pl-3" style="border-left:2px solid rgba(229,193,88,.4)">${esc(s.note)}</p>` : ''}
+    ${calcHTML(s, locked)}
+    <button class="btn-gold mt-3" data-route-open="${esc(s.id)}">Открыть сделку на бирже →</button>
+  </article>`;
+}
+function plural(n, a, b, c) { const m10 = n % 10, m100 = n % 100; return m10 === 1 && m100 !== 11 ? a : m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14) ? b : c; }
+function renderSignals() {
+  const list = D.signals.filter(s => filter === 'all' || (filter === 'active' ? !isClosed(s) : isClosed(s)));
+  const el = $('#signalsList');
+  el.innerHTML = list.length ? list.map(cardHTML).join('') : `<div class="glass p-8 text-center text-[#6E7380] mono text-[12px]">В этом разделе пока пусто</div>`;
+  el.classList.remove('stagger'); void el.offsetWidth; el.classList.add('stagger');
+  const n = D.signals.length; $('#sigCount').textContent = `${n} ${plural(n, 'сетап', 'сетапа', 'сетапов')}`;
+}
+$('#signalsList').addEventListener('input', e => {
+  const id = e.target.dataset.dep; if (!id) return;
+  const clean = e.target.value.replace(/[^\d.,]/g, ''); if (clean !== e.target.value) e.target.value = clean;
+  deposits[id] = clean; store.set('tp_dep', JSON.stringify(deposits));
+  const s = D.signals.find(x => x.id === id);
+  $(`[data-calcout="${id}"]`).innerHTML = calcOut(s, clean, s.isLocked && !isPro);
+});
+$('#signalsList').addEventListener('click', e => {
+  if (e.target.closest('[data-unlock]')) { vibrate(); go('access'); setTimeout(() => { const i = $('#codeInp'); if (i) i.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 400); return; }
+  const r = e.target.closest('[data-route-open]'); if (r) { vibrate(); openRouter(D.signals.find(x => x.id === r.dataset.routeOpen)); }
+});
+$('#filterSeg').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return; vibrate(6);
+  filter = b.dataset.f;
+  $$('#filterSeg button').forEach((x, i) => { x.classList.toggle('on', x === b); if (x === b) $('#filterSeg .pill').style.transform = `translateX(${i * 100}%)`; });
+  renderSignals();
+});
+
+/* ---------------- Барометр ---------------- */
+function renderBarometer() {
+  $('#princeThought').textContent = D.princeThought; $('#tradeMode').textContent = D.tradeMode;
+  const imp = s => /бычий/i.test(s) ? ['rgba(0,229,160,.55)', 'chip-long'] : /медвеж/i.test(s) ? ['rgba(255,59,92,.55)', 'chip-short'] : ['rgba(255,255,255,.18)', 'chip-n'];
+  $('#newsList').innerHTML = D.news.map(n => { const [bc, cc] = imp(n.impact); return `<div class="glass p-4" style="border-left:2px solid ${bc}">
+    <div class="flex items-center justify-between gap-2"><span class="mono text-[11px] text-[#6E7380]">${esc(n.time)}</span><span class="chip ${cc}">${esc(n.impact)}</span></div>
+    <div class="font-bold text-[15px] mt-2 leading-snug">${esc(n.title)}</div>
+    <div class="text-[13px] text-[#9aa0ac] mt-1 leading-relaxed">${esc(n.summary)}</div></div>`; }).join('');
+}
+
+/* ---------------- Обучение ---------------- */
+function renderEdu() {
+  const items = [
+    ['01', 'Биржа с первой кнопки', 'Регистрация, интерфейс фьючерсов, первый ордер — руками, на живом экране.'],
+    ['02', 'Лимитные сетки', 'Как ставить ордера в зоны ликвидности и не догонять рынок.'],
+    ['03', 'Управление риском', 'Размер позиции, стоп-лосс, плечо от тела депозита — математика выживания.'],
+    ['04', 'Система сложного процента', 'Как $300 превращаются в $3,000: реинвест, сейф и фиксация прибыли.'],
+    ['05', 'Дисциплина', 'Торговый план, журнал сделок и холодная голова без эмоций.']
+  ];
+  $('#eduList').innerHTML = items.map(([n, t, d], i) => `<div class="flex gap-3.5 p-3.5" style="${i ? 'border-top:1px solid rgba(255,255,255,.05)' : ''}"><div class="mono text-[13px] font-bold gold-text pt-0.5">${n}</div><div><div class="font-bold text-[15px]">${t}</div><div class="text-[13px] text-[#8A8F9C] mt-0.5 leading-relaxed">${d}</div></div></div>`).join('');
+  $('#eduBtn').href = tgLink('Привет, Технопринц! Хочу записаться на личное обучение трейдингу с нуля в прямом эфире. Расскажи про ближайший поток 🙌');
+  $('#channelBtn').href = D.links.channelTg;
+}
+
+/* ---------------- Доступ ---------------- */
+function renderAccess() {
+  $('#plans').innerHTML = D.plans.map(p => `<button class="glass corners plan ${p.hot ? 'hot' : ''}" data-plan="${esc(p.id)}"><i class="c1"></i><i class="c2"></i>
+    <div class="min-w-0"><div class="flex items-center gap-2 flex-wrap"><span class="font-extrabold text-[17px]">${esc(p.title)}</span>${p.hot ? '<span class="chip" style="background:linear-gradient(135deg,#F7DD8A,#E5C158);color:#1A1405">★ Выбор большинства</span>' : ''}</div>
+    <div class="mono text-[12px] text-[#8A8F9C] mt-1">${esc(p.period)} · все сигналы и уровни</div></div>
+    <div class="text-right flex-none"><div class="mono text-[26px] font-bold ${p.hot ? 'gold-text' : ''}">$${p.price}</div><div class="mono text-[10px] text-[#6E7380]">оплатить →</div></div></button>`).join('');
+  $('#freeBybit').href = D.links.bybit;
+  $('#freeUid').href = tgLink('Привет! Зарегистрировался на Bybit по твоей ссылке и пополнил депозит. Хочу 7 дней бесплатного доступа к терминалу.\nМой UID на Bybit: ');
+  renderCodeBox();
+}
+function renderCodeBox() {
+  if (!isPro) return;
+  $('#codeBox').innerHTML = `<div class="p-4 rounded-xl flex items-center gap-3" style="background:rgba(0,229,160,.08);border:1px solid rgba(0,229,160,.4)"><div class="lock-ico" style="border-color:rgba(0,229,160,.6);background:rgba(0,229,160,.1);color:var(--em);font-weight:800">✓</div><div><div class="font-extrabold" style="color:var(--em)">PRO АКТИВЕН</div><div class="text-[12.5px] text-[#9aa0ac] mt-0.5">Все сигналы и уровни разблокированы на этом устройстве.</div></div></div>`;
+}
+$('#plans').addEventListener('click', e => { const b = e.target.closest('[data-plan]'); if (b) { vibrate(); openPay(D.plans.find(p => p.id === b.dataset.plan)); } });
+document.addEventListener('click', e => { if (e.target.id === 'codeBtn') activate(); });
+document.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.id === 'codeInp') activate(); if (e.key === 'Escape') closeModals(); });
+function activate() {
+  const inp = $('#codeInp'), msg = $('#codeMsg'), v = inp.value.trim().toUpperCase();
+  if (v && D.accessCodes.map(c => String(c).toUpperCase()).includes(v)) {
+    isPro = true; store.set('tp_pro', '1'); vibrate([10, 40, 10]); inp.blur();
+    renderHeader(); renderSignals(); renderCodeBox();
+    const b = $('#accessBadge'); b.classList.remove('unlock-flash'); void b.offsetWidth; b.classList.add('unlock-flash');
+    toast('PRO АКТИВЕН — сигналы разблокированы ✓');
+    setTimeout(() => go('signals'), 900);
+  } else {
+    inp.classList.remove('shake'); void inp.offsetWidth; inp.classList.add('shake', 'err'); vibrate(60);
+    msg.textContent = v ? '✕ Неверный код доступа' : '✕ Введи код доступа'; msg.style.color = '#FF6A82';
+    clearTimeout(inp._h); inp._h = setTimeout(() => inp.classList.remove('err'), 1400);
+  }
+}
+
+/* ---------------- Модальные окна ---------------- */
+function openModal(id) { const m = $('#' + id); m.classList.add('open'); m.setAttribute('aria-hidden', 'false'); document.body.style.overflow = 'hidden'; }
+function closeModals() { $$('.modal.open').forEach(m => { m.classList.remove('open'); m.setAttribute('aria-hidden', 'true'); }); document.body.style.overflow = ''; }
+$$('.modal').forEach(m => m.addEventListener('click', e => { if (e.target.closest('[data-close]')) closeModals(); }));
+// свайп шторки вниз — закрыть
+$$('.sheet').forEach(sh => { let y0 = null, dy = 0;
+  sh.addEventListener('touchstart', e => { if (sh.scrollTop <= 0) { y0 = e.touches[0].clientY; dy = 0; } }, { passive: true });
+  sh.addEventListener('touchmove', e => { if (y0 === null) return; dy = Math.max(0, e.touches[0].clientY - y0); if (dy > 4) { sh.style.transition = 'none'; sh.style.transform = `translateY(${dy}px)`; } }, { passive: true });
+  sh.addEventListener('touchend', () => { if (y0 === null) return; sh.style.transition = ''; sh.style.transform = ''; if (dy > 110) closeModals(); y0 = null; });
+});
+
+function openRouter(s) {
+  $('#routerPair').textContent = `${s.pair} · ${s.side} · ${s.orderType} · ${s.leverage}`;
+  $('#routeGo').href = D.links.bybit;
+  openModal('routerModal');
+}
+
+let payPlan = null, payNet = 'bep20';
+const NETS = { bep20: 'USDT (BEP-20)', trc20: 'USDT (TRC-20)', erc20: 'USDC (ERC-20)' };
+function openPay(p) { payPlan = p; paintPay(); openModal('payModal'); }
+function paintPay() {
+  const p = payPlan, coin = payNet === 'erc20' ? 'USDC' : 'USDT';
+  $('#payPlan').textContent = `${p.title} · ${p.period}`;
+  $('#payAmt').textContent = usd(p.price); $('#payAmt2').textContent = `${p.price} ${coin}`;
+  $('#netName').textContent = NETS[payNet]; $('#netName2').textContent = NETS[payNet];
+  $('#payAddr').textContent = D.wallets[payNet];
+  $$('#netSeg button').forEach(b => b.classList.toggle('on', b.dataset.net === payNet));
+  const cb = $('#copyBtn'); cb.textContent = 'Скопировать адрес'; cb.classList.remove('ok');
+  $('#paidBtn').href = tgLink(`Привет! Я оплатил доступ к TECHNOPRINCE // TERMINAL.\nТариф: ${p.title} (${p.period}) — $${p.price}\nСеть: ${NETS[payNet]}\nЧек / хеш транзакции: `);
+}
+$('#netSeg').addEventListener('click', e => { const b = e.target.closest('[data-net]'); if (b) { vibrate(6); payNet = b.dataset.net; paintPay(); } });
+async function copyText(t) {
+  try { if (navigator.clipboard && window.isSecureContext) { await navigator.clipboard.writeText(t); return true; } } catch (e) {}
+  try { // запасной путь для Telegram / Instagram in-app браузеров
+    const ta = document.createElement('textarea'); ta.value = t; ta.setAttribute('readonly', ''); ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;font-size:16px';
+    document.body.appendChild(ta); ta.focus(); ta.select(); ta.setSelectionRange(0, t.length);
+    const ok = document.execCommand('copy'); document.body.removeChild(ta); return ok;
+  } catch (e) { return false; }
+}
+$('#copyBtn').addEventListener('click', async () => {
+  const cb = $('#copyBtn'), ok = await copyText(D.wallets[payNet]); vibrate(15);
+  if (ok) { cb.textContent = 'Адрес скопирован ✓'; cb.classList.add('ok'); }
+  else { cb.textContent = 'Выдели адрес и скопируй вручную'; const r = document.createRange(); r.selectNodeContents($('#payAddr')); const s = getSelection(); s.removeAllRanges(); s.addRange(r); }
+  clearTimeout(cb._h); cb._h = setTimeout(() => { cb.textContent = 'Скопировать адрес'; cb.classList.remove('ok'); }, 2600);
+});
+
+/* ---------------- Навигация ---------------- */
+const TABS = ['signals', 'barometer', 'edu', 'access'];
+function go(tab) {
+  const i = TABS.indexOf(tab); if (i < 0) return;
+  $$('.tab').forEach(t => t.classList.toggle('active', t.id === 'tab-' + tab));
+  $$('#navWrap button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
+  $('#navInd').style.transform = `translateX(${i * 100}%)`;
+  window.scrollTo(0, 0);
+  if (tab === 'barometer') loadFng();
+  try { history.replaceState(null, '', '#' + tab); } catch (e) {}
+}
+$('#navWrap').addEventListener('click', e => { const b = e.target.closest('button[data-tab]'); if (b) { vibrate(6); go(b.dataset.tab); } });
+
+/* ---------------- Старт ---------------- */
+// все внешние ссылки — в новом окне, без доступа к opener
+document.addEventListener('click', e => { const a = e.target.closest('a[href^="http"]'); if (a) { a.target = '_blank'; a.rel = 'noopener noreferrer'; } }, true);
+initGauge(); renderHeader(); renderSignals(); renderBarometer(); renderEdu(); renderAccess();
+syncHeaderHeight(); addEventListener('resize', syncHeaderHeight);
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(syncHeaderHeight);
+loadTicker(); setInterval(() => { if (!document.hidden) loadTicker(); }, 15000);
+setTimeout(loadFng, 800);
+const h0 = location.hash.slice(1); if (TABS.includes(h0)) go(h0);
+</script>
+</body>
+</html>
