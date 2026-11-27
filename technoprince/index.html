@@ -6,6 +6,7 @@
 <meta name="theme-color" content="#050608">
 <meta name="format-detection" content="telephone=no">
 <title>TECHNOPRINCE // TERMINAL</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Crect width=%2264%22 height=%2264%22 rx=%2214%22 fill=%22%23E5C158%22/%3E%3Ctext x=%2232%22 y=%2242%22 font-size=%2226%22 font-family=%22Arial%22 font-weight=%22700%22 text-anchor=%22middle%22 fill=%22%23111%22%3ETP%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -209,7 +210,7 @@
         </div>
         <div class="bar mt-1.5"><i id="mBar" style="width:0%"></i></div>
       </div>
-      <div class="chip chip-gold" style="height:30px">В СЕЙФЕ: <span id="mSafe">$0</span></div>
+      <div class="chip chip-gold" style="height:30px" title="Спотовый резерв — вне торгового контура">В СЕЙФЕ: <span id="mSafe">$0</span></div>
     </div>
   </div>
   <div class="ticker max-w-[520px] mx-auto" id="ticker">
@@ -407,7 +408,7 @@
 const TERMINAL_DATA = {
 
   // 🏁 МАРАФОН: старт, текущий баланс, цель, сколько выведено в сейф (в $)
-  marathon: { start: 300, current: 300, target: 3000, safe: 0 },
+  marathon: { start: 300, current: 300, target: 3000, safe: 90 }, // $210 рабочий фьючерсный контур + $90 спотовый резерв
 
   // 🔗 ССЫЛКИ — ЗАМЕНИ НА СВОИ
   links: {
@@ -427,36 +428,41 @@ const TERMINAL_DATA = {
   accessCodes: ["PRINCE2026"],
 
   // 🧠 МЫСЛИ ТЕХНОПРИНЦА (вкладка БАРОМЕТР)
-  princeThought: "На отскоке техсектора США рынок выдал импульс вверх, но спот на крупных биржах (Binance, Coinbase, Upbit) разгружается в этот рост. По картам ликвидаций AVAX перевес снизу (64% ликвидности лонгов с магнитом на $6.88), сверху осталась полочка стопов на $7.15–$7.16. Выставили холодную лимитную ловушку и идём отдыхать — работает математика, не эмоции.",
+  princeThought: "Индекс страха и жадности на 11 (Крайний страх), спотовые ETF в оттоке, цена BTC около $59,800 в узком коридоре между нижним пулом ликвидаций (~$58,688) и верхними шортовыми стопами ($60,630–$61,160). Выставили два встречных лимитных ордера с 1 TP и стопом на плече 5x (изолированная маржа). Сработает один — второй снимаем.",
 
   // 📰 AI-ФИЛЬТР НОВОСТЕЙ (3 карточки)
   // impact: "Бычий фактор 🟢" / "Медвежий фактор 🔴" / "Рыночный шум ⚪"
   news: [
-    { time: "23 ноя · 23:15", title: "Отскок техсектора США (Nvidia +32%, Nasdaq +6.7%)", summary: "Краткосрочный всплеск аппетита к риску вызвал волну закрытия шортов по крипте, но институциональные BTC-ETF всю неделю фиксировали оттоки.", impact: "Рыночный шум ⚪" },
-    { time: "23 ноя · 23:15", title: "AVAX: Спотовый отток на фоне фьючерсного импульса", summary: "Binance (-$427K), Upbit (-$263K) и Coinbase (-$242K) продают на росте, Coinbase Premium в минусе (-0.14%).", impact: "Медвежий фактор 🔴" },
-    { time: "23 ноя · 23:15", title: "Карта ликвидаций AVAX: перевес 64% на стороне лонгов снизу", summary: "Под ценой скопились крупные пулы ликвидаций ($6.88 и $6.59), сверху — локальная полка стопов на $7.15–$7.16.", impact: "Медвежий фактор 🔴" }
+    { time: "28 ноя · 02:00", title: "Страх и жадность на 11 + оттоки из ETF", summary: "Рынок в зоне Extreme Fear, по спотовым ETF преобладают оттоки, деривативы сбрасывают плечи после ликвидаций лонгов.", impact: "Медвежий фактор 🔴" },
+    { time: "28 ноя · 02:00", title: "Ликвидность BTC натянута с двух сторон", summary: "Внизу выделяется крупный пул лонговых ликвидаций около $58,688, вверху — полочка шортовых ликвидаций в зоне $60,630–$61,160.", impact: "Рыночный шум ⚪" },
+    { time: "28 ноя · 02:00", title: "Дисциплина двух лимиток на плече 5x", summary: "Не гадаем посреди коридора: ждём зацеп границы с жёстким стопом и 1 тейк-профитом; при активации одной стороны вторую лимитку отменяем.", impact: "Бычий фактор 🟢" }
   ],
 
   // 📡 СИГНАЛЫ МАРАФОНА — только реальные сетапы
   //  side: "SHORT" / "LONG"        orderType: "LIMIT" / "MARKET"
-  //  leverage: "5x", "3x", "7x", "10x" или "20x // ОТ ТЕЛА ДЕПОЗИТА"
-  //  status: "Ожидает лимитку" / "В работе" / "Закрыт в плюс +18.4%"
+  //  leverage: "5x", "3x", "7x", "10x", "5x (Изолир.)" или "20x // ОТ ТЕЛА ДЕПОЗИТА"
+  //  status: "Ожидает лимитку" / "В сделке" / "Закрыт в плюс +18.4%"
   //          (статус, начинающийся с «Закрыт», попадает в «Историю побед»)
   //  isLocked: true — уровни скрыты для гостей, false — открыты всем
   //  tpMode: "1TP" (tps: [цена]) или "3TP" (tps: [TP1, TP2, TP3])
   //  riskPercent — какой % депозита идёт в маржу сделки
+  //  proof — журнал сделки: stage "placed" / "filled" / "closed", time, caption, src (скриншот, необязательно)
   signals: [
-    { // 🟡 Первый боевой сигнал марафона $300 ➔ $3,000 — открыт всем
-      id: "M-001", pair: "AVAX/USDT", side: "SHORT", orderType: "LIMIT", leverage: "5x",
+    { // 🔻 Шорт от верхней зоны ликвидаций
+      id: "M-002", pair: "BTC/USDT", side: "SHORT", orderType: "LIMIT", leverage: "5x (Изолир.)",
       status: "Ожидает лимитку", isLocked: false,
-      entry: 7.155, stopLoss: 7.365, tpMode: "1TP", tps: [6.590],
-      // 🧾 журнал сделки: stage "placed" / "filled" / "closed"; src — скриншот (необязательно)
-      proof: [
-        { stage: "placed", time: "23 ноя · 23:12", caption: "Ордер выставлен на BingX: шорт лимит 7.155, 5x, ТП 6.590 / СЛ 7.365" },
-        { stage: "placed", time: "24 ноя · 00:51", src: "img/avax-001-bingx-1h.jpg", caption: "BingX 1H: лимитный шорт 7.155 стоит в стакане · СЛ 7.365 / ТП 6.590 · цена 6.886" }
-      ],
-      riskPercent: 19, // $40 из $210 рабочего пула
-      note: "Лимитный вход от верхней полки ликвидаций ($7.15–$7.16) и 4H зоны предложения. Стоп вынесен за кластеры $7.27–$7.35. Один финальный тейк на $6.590 под ночную отработку. Если цена уйдёт ниже $6.88 без зацепа лимитки — ордер снимаем."
+      entry: 60750, stopLoss: 62380, tpMode: "1TP", tps: [58850],
+      riskPercent: 10,
+      note: "Отложенный лимитный шорт от верхней полочки ликвидаций ($60,630–$61,160). При исполнении этого ордера встречный лонг на $58,680 отменяем.",
+      proof: [{ stage: "placed", time: "28 ноя · 01:59", caption: "BingX: шорт лимит 60,750, 5x (Изолир.), ТП 58,850 / СЛ 62,380 · сумма 194.40 USDT", src: "img/btc-orders-bingx-2811.jpg" }]
+    },
+    { // 🔺 Лонг от нижнего пула ликвидаций
+      id: "M-003", pair: "BTC/USDT", side: "LONG", orderType: "LIMIT", leverage: "5x (Изолир.)",
+      status: "Ожидает лимитку", isLocked: false,
+      entry: 58680, stopLoss: 57420, tpMode: "1TP", tps: [60550],
+      riskPercent: 10,
+      note: "Отложенный лимитный лонг в районе крупного пула лонговых ликвидаций (~$58,688) с 1 тейком на $60,550. При исполнении этого ордера встречный шорт на $60,750 отменяем.",
+      proof: [{ stage: "placed", time: "28 ноя · 01:57", caption: "BingX: лонг лимит 58,680, 5x (Изолир.), ТП 60,550 / СЛ 57,420 · сумма 193.64 USDT", src: "img/btc-orders-bingx-2811.jpg" }]
     }
   ],
 
@@ -557,7 +563,7 @@ function proofHTML(s) {
   </div>`;
 }
 function distInner(s) {
-  const px = livePx[symOf(s)], dp = n => { const f = n >= 100 ? 2 : 3; return Number(n).toLocaleString('en-US', { minimumFractionDigits: f, maximumFractionDigits: f }); };
+  const px = livePx[symOf(s)], dp = n => { const f = n >= 1000 ? 0 : n >= 100 ? 2 : 3; return Number(n).toLocaleString('en-US', { minimumFractionDigits: f, maximumFractionDigits: f }); };
   const stale = livePxStale ? ' <span class="text-[#6E7380]">(кэш)</span>' : '';
   if (isActive(s)) {
     if (!(px > 0)) return { hit: false, html: `<div class="flex justify-between items-center"><span class="label">Позиция открыта</span><span class="mono text-[11px] text-[#6E7380]">нет связи с биржей · вход ${fmtPrice(s.entry)}</span></div>` };
@@ -620,7 +626,7 @@ document.addEventListener('click', e => {
 
 /* ---------------- Binance 24h тикер (с запасными узлами и кэшем) ---------------- */
 const SYMS = ['BTCUSDT', 'ETHUSDT', 'SOLUSDT'];
-const TICK_HOSTS = ['https://api.binance.com', 'https://data-api.binance.vision', 'https://api1.binance.com'];
+const TICK_HOSTS = ['https://data-api.binance.vision', 'https://api.binance.com', 'https://api1.binance.com']; // data-api отдаёт CORS-заголовки — без ошибок в консоли
 const lastPx = {};
 async function fetchJSON(url, ms = 6000) {
   const ctl = new AbortController(); const tm = setTimeout(() => ctl.abort(), ms);
